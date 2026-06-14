@@ -255,12 +255,21 @@ function ProfileCard({ onViewPortfolio }) {
           {/* Skills */}
           <div className="profile-skills-row">
             <span className="profile-skills-label">SKILLS . .'</span>
-            <div className="profile-skills">
-              {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX', 'ibis Paint X', 'Visual Studio Code',
-                'Xammp', 'My SQL Workbench', 'Microsoft Office', 'Google Workspace'
-              ].map(s => (
-                <span key={s} className="profile-skill-tag">{s}</span>
-              ))}
+            <div className="profile-skills-group">
+              <span className="profile-skills-sublabel">technical</span>
+              <div className="profile-skills">
+                {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX'].map(s => (
+                  <span key={s} className="profile-skill-tag">{s}</span>
+                ))}
+              </div>
+            </div>
+            <div className="profile-skills-group">
+              <span className="profile-skills-sublabel">soft skills</span>
+              <div className="profile-skills">
+                {['Creative Thinking', 'Attention to Detail', 'Communication', 'Fast Learner'].map(s => (
+                  <span key={s} className="profile-skill-tag profile-skill-tag--soft">{s}</span>
+                ))}
+              </div>
             </div>
           </div>
 

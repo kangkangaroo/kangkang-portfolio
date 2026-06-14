@@ -742,6 +742,17 @@ body {
 }
 .profile-skills-label::before { content: '★— '; font-size: 9px; }
 .profile-skills { display: flex; flex-wrap: wrap; gap: 5px; }
+.profile-skills-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.profile-skills-sublabel {
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .profile-skill-tag {
   background: var(--gold);
   color: var(--frame-bg);
@@ -751,6 +762,12 @@ body {
   border-radius: 3px;
   letter-spacing: 0.03em;
   font-family: 'Inter', sans-serif;
+}
+.profile-skill-tag--soft {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  font-weight: 600;
 }
  
 /* Bottom row */
