@@ -232,11 +232,11 @@ function ProfileCard({ onViewPortfolio }) {
               <span className="profile-contact-icon">✉</span>
               <span>kangkangaroooooo@gmail.com</span>
             </a>
-            <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="profile-contact-item">
+{/*             <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="profile-contact-item">
               <span className="profile-contact-icon">f</span>
               <span>kang kang</span>
-            </a>
-            <a href="https://instagram.com/kangkangaroo" target="_blank" rel="noreferrer" className="profile-contact-item">
+            </a> */}
+            <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
               <span className="profile-contact-icon">◎</span>
               <span>kangkangaroo</span>
             </a>
