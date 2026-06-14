@@ -233,7 +233,7 @@ function ProfileCard({ onViewPortfolio }) {
               <span>kangkangaroooooo@gmail.com</span>
             </a>
             <div className="profile-contact-item">
-              <span className="profile-contact-icon">◎</span>
+              <span className="profile-contact-icon">@</span>
               <span>
                 <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo</a>
                 {' / '}
