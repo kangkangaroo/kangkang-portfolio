@@ -237,7 +237,7 @@ function ProfileCard({ onViewPortfolio }) {
               <span>
                 <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo</a>
                 {' / '}
-                <a href="https://instagram.com/issang" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>issang</a>
+                <a href="https://instagram.com/issaaaaaang" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>issaaaaaang</a>
               </span>
             </div>
           </div>
