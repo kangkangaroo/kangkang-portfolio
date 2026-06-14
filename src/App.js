@@ -232,14 +232,14 @@ function ProfileCard({ onViewPortfolio }) {
               <span className="profile-contact-icon">✉</span>
               <span>kangkangaroooooo@gmail.com</span>
             </a>
-{/*             <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="profile-contact-item">
-              <span className="profile-contact-icon">f</span>
-              <span>kang kang</span>
-            </a> */}
-            <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
+            <div className="profile-contact-item">
               <span className="profile-contact-icon">◎</span>
-              <span>kangkangaroo</span>
-            </a>
+              <span>
+                <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo</a>
+                {' / '}
+                <a href="https://instagram.com/issang" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>issang</a>
+              </span>
+            </div>
           </div>
 
           {/* Divider */}
