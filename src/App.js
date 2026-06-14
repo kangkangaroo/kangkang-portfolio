@@ -228,10 +228,14 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* Contact row */}
           <div className="profile-contacts">
-            <a href="mailto:kangkangaroooooo@gmail.com" className="profile-contact-item">
+            <div className="profile-contact-item">
               <span className="profile-contact-icon">✉</span>
-              <span>kangkangaroooooo@gmail.com</span>
-            </a>
+              <span>
+                <a href="mailto:kangkangaroooooo@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo@gmail.com</a>
+                {' / '}
+                <a href="mailto:ibmora00@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>ibmora00@gmail.com</a>
+              </span>
+            </div>
             <div className="profile-contact-item">
               <span className="profile-contact-icon">@</span>
               <span>
