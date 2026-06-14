@@ -811,3 +811,9 @@ body {
   .profile-deco-stars { display: none; }
   .profile-deco-right { display: none; }
 }
+
+.profile-contact-item a:hover {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
