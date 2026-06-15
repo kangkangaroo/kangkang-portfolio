@@ -36,7 +36,6 @@ function HomeSection() {
     <div className="section-content hero-bg" style={{ backgroundImage: 'url(/frame1.png)' }}>
       <div className="hero-overlay" />
       <div className="hero-text">
-        {/* <div className="hero-caption">mabuhay! you can call me Kangkang, a UI/UX designer</div> */}
         <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
         <p className="hero-desc">"mabuhay! you can call me kangkang — a digital artist and web designer with budding skills and a growing portfolio. i'm eager to learn and take on new challenges! ⸜(｡˃ ᵕ ˂ )⸝♡"</p>
         <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
@@ -213,12 +212,14 @@ function ProfileCard({ onViewPortfolio }) {
 
         {/* Card body */}
         <div className="profile-card-body">
-          {/* cover photo */}
+
+          {/* ── Cover photo ── */}
           <div className="profile-cover" />
+
           {/* Avatar */}
           <div className="profile-avatar-wrap">
             <div className="profile-avatar">
-              <img src="/kangkang.png" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
+              <img src="/kangkang.png" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
           </div>
 
