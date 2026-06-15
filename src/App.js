@@ -33,13 +33,17 @@ const SERVICE_DATA = {
 // ── Portfolio sections ────────────────────────────────────────────────────────
 function HomeSection() {
   return (
-    <div className="section-content hero-bg" style={{ backgroundImage: 'url(/frame1.png)' }}>
-      <div className="hero-overlay" />
-      <div className="hero-text">
-        <div className="hero-caption">mabuhay! you can call me Kangkang, a UI/UX designer</div>
-        <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
-        <p className="hero-desc">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. I'm eager to learn and take on new challenges! (ᴗ ˘ᴗ) ˘ˇ "</p>
-        <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
+    <div className="section-content">
+      <div className="hero-inner">
+        <div className="hero-text">
+          <div className="hero-caption">mabuhay! you can call me Kangkang, a UI/UX designer</div>
+          <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
+          <p className="hero-desc">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. I'm eager to learn and take on new challenges! (ᴗ ˘ᴗ) ˘ˇ "</p>
+          <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
+        </div>
+        <div className="hero-avatar-placeholder">
+          <span className="avatar-silhouette">🧑‍💻</span>
+        </div>
       </div>
     </div>
   );
@@ -215,7 +219,9 @@ function ProfileCard({ onViewPortfolio }) {
         <div className="profile-card-body">
           {/* Avatar */}
           <div className="profile-avatar-wrap">
-            <div className="profile-avatar">🧑‍🎨</div>
+            <div className="profile-avatar">
+              <img src="/kangkang.jpg" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
+            </div>
           </div>
 
           {/* Name + title */}
@@ -224,17 +230,17 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* Contact row */}
           <div className="profile-contacts">
-            <a href="mailto:kangkangaroooooo@gmail.com" className="profile-contact-item">
+            <div className="profile-contact-item">
               <span className="profile-contact-icon">✉</span>
-              <span>kangkangaroooooo@gmail.com</span>
-            </a>
-            <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="profile-contact-item">
-              <span className="profile-contact-icon">f</span>
-              <span>kang kang</span>
-            </a>
-            <a href="https://instagram.com/kangkangaroo" target="_blank" rel="noreferrer" className="profile-contact-item">
-              <span className="profile-contact-icon">◎</span>
-              <span>kangkangaroo</span>
+              <span>
+                <a href="mailto:kangkangaroooooo@gmail.com">kangkangaroooooo@gmail.com</a>
+                {' / '}
+                <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
+              </span>
+            </div>
+            <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
+              <span className="profile-contact-icon">@</span>
+              <span>kangkangaroooooo</span>
             </a>
           </div>
 
@@ -245,7 +251,7 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* About box */}
           <div className="profile-about-box">
-            <p>"Hey there! I go by the screen name Kangkang, an aspiring digital artist and web designer. While I'm not yet a professional, I enjoy crafting creative artwork, designing sleek and user-friendly web layouts, and exploring new ways to bring concepts to life online. Every project is a chance to combine creativity with functionality and make something unique." ∧_∧</p>
+            <p>"Hey there! I go by Kangkang — an aspiring digital artist and web designer. I may not be a professional yet, but I pour my heart into every artwork, layout, and concept I bring to life. For me, every project is a chance to blend creativity with functionality and make something truly unique." ∧_∧</p>
           </div>
 
           {/* Skills */}
@@ -254,7 +260,9 @@ function ProfileCard({ onViewPortfolio }) {
             <div className="profile-skills-group">
               <span className="profile-skills-sublabel">technical</span>
               <div className="profile-skills">
-                {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX'].map(s => (
+                {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX', 'ibis Paint X',
+                  'XAMMP', 'My SQL Workbench', 'Microsoft Office', 'Google Workspace'
+                ].map(s => (
                   <span key={s} className="profile-skill-tag">{s}</span>
                 ))}
               </div>
@@ -262,7 +270,7 @@ function ProfileCard({ onViewPortfolio }) {
             <div className="profile-skills-group">
               <span className="profile-skills-sublabel">soft skills</span>
               <div className="profile-skills">
-                {['Creative Thinking', 'Attention to Detail', 'Communication', 'Fast Learner'].map(s => (
+                {['Creative Thinking', 'Attention to Detail', 'Communication', 'Willingness to Learn'].map(s => (
                   <span key={s} className="profile-skill-tag profile-skill-tag--soft">{s}</span>
                 ))}
               </div>

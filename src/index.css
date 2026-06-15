@@ -445,10 +445,51 @@ body {
   .service-projects-grid { grid-template-columns: 1fr; }
 }
 
-/* ═══════════════════════════════════════════════════════
-   ADD THESE TO THE BOTTOM OF index.css
-   (replaces the previous add-to-index.css entirely)
-   ═══════════════════════════════════════════════════════ */
+/* Single-page layout: one card centered */
+.page.single {
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  gap: 0;
+}
+ 
+/* Fade-in animation when switching tabs */
+.tab-panel {
+  animation: tabFadeIn 0.3s ease forwards;
+}
+ 
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+ 
+/* Nav tabs need button styles (changed from <a> to <button>) */
+.nav-tabs button {
+  flex: 1;
+  text-align: center;
+  padding: 10px 6px;
+  font-size: 10.5px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-right: 1px solid var(--frame-border);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s, background 0.2s;
+}
+.nav-tabs button:last-child { border-right: none; }
+.nav-tabs button:hover { color: var(--text); background: #222224; }
+.nav-tabs button.active {
+  color: var(--gold);
+  background: #1e1e20;
+  font-weight: 600;
+}
+.nav-tabs button.active-gold {
+  background: var(--gold);
+  color: var(--frame-bg);
+  font-weight: 700;
+}
 
 /* ── Single-page portfolio layout ── */
 .page.single {
@@ -457,7 +498,7 @@ body {
   padding: 40px 20px;
   gap: 0;
 }
-
+ 
 /* Tab fade-in */
 .tab-panel {
   animation: tabFadeIn 0.3s ease forwards;
@@ -466,7 +507,7 @@ body {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
+ 
 /* Nav tabs as buttons */
 .nav-tabs button {
   flex: 1;
@@ -486,7 +527,7 @@ body {
 .nav-tabs button:hover { color: var(--text); background: #222224; }
 .nav-tabs button.active { color: var(--gold); background: #1e1e20; font-weight: 600; }
 .nav-tabs button.active-gold { background: var(--gold); color: var(--frame-bg); font-weight: 700; }
-
+ 
 /* Back button in browser bar */
 .back-btn {
   font-size: 10px;
@@ -501,32 +542,11 @@ body {
   white-space: nowrap;
 }
 .back-btn:hover { color: var(--gold); }
-
+ 
 /* ══════════════════════════════════════════════════════
    PROFILE CARD — matches portfolio browser-frame style
    ══════════════════════════════════════════════════════ */
-
-/* Hero background image */
-.hero-bg {
-  position: relative;
-  background-size: cover;
-  background-position: right center;
-  background-repeat: no-repeat;
-  min-height: 220px;
-  padding: 28px !important;
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, rgba(18,18,20,0.92) 45%, rgba(18,18,20,0.3) 100%);
-  border-radius: 6px;
-  pointer-events: none;
-}
-.hero-bg .hero-text {
-  position: relative;
-  z-index: 1;
-}
-
+ 
 .profile-bg {
   min-height: 100vh;
   display: flex;
@@ -536,7 +556,7 @@ body {
   overflow: hidden;
   padding: 40px 20px;
 }
-
+ 
 /* Decorative stars — same as browser-frame stars */
 .profile-deco-stars {
   position: fixed;
@@ -556,7 +576,7 @@ body {
 .deco-star--lg { font-size: 2.5rem; top: 55px;  left: 180px; animation-delay: 0.8s; }
 .deco-star--sm { font-size: 1.4rem; top: 265px; left: 155px; animation-delay: 1.4s; }
 .deco-star--xs { font-size: 0.9rem; top: 315px; left: 55px;  animation-delay: 2s; }
-
+ 
 /* Right deco circles */
 .profile-deco-right {
   position: fixed;
@@ -569,7 +589,7 @@ body {
 .deco-circle--lg { width: 52px; height: 52px; top: 58px;  right: 38px;  opacity: 0.85; }
 .deco-circle--md { width: 16px; height: 16px; top: 38px;  right: 108px; opacity: 0.65; }
 .deco-circle--sm { width: 26px; height: 26px; top: 138px; right: 18px;  opacity: 0.75; }
-
+ 
 /* ── The card: uses same shell as .browser-frame ── */
 .profile-card {
   position: relative;
@@ -586,7 +606,7 @@ body {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
+ 
 /* Browser-style top bar */
 .profile-card-bar {
   background: #1e1e20;
@@ -606,7 +626,7 @@ body {
   text-align: center;
   letter-spacing: 0.02em;
 }
-
+ 
 /* Card body — same padding as .section-content */
 .profile-card-body {
   padding: 28px 28px 20px;
@@ -614,7 +634,7 @@ body {
   flex-direction: column;
   align-items: center;
 }
-
+ 
 /* Avatar */
 .profile-avatar-wrap { margin-bottom: 12px; }
 .profile-avatar {
@@ -626,7 +646,7 @@ body {
   font-size: 2.6rem;
   overflow: hidden;
 }
-
+ 
 /* Name */
 .profile-name {
   font-size: 1.35rem;
@@ -636,7 +656,7 @@ body {
   margin-bottom: 4px;
   text-align: center;
 }
-
+ 
 /* Title */
 .profile-title {
   font-size: 10px;
@@ -645,7 +665,7 @@ body {
   margin-bottom: 16px;
   text-align: center;
 }
-
+ 
 /* Contact row */
 .profile-contacts {
   display: flex;
@@ -671,6 +691,18 @@ body {
   background: #2a2a2e;
 }
 
+.profile-contact-item a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.profile-contact-item a:hover {
+  color: var(--gold);
+  /* text-decoration: underline; */
+  text-underline-offset: 2px;
+}
+ 
 /* Divider — matches about-block-title style */
 .profile-divider {
   width: 100%;
@@ -690,7 +722,7 @@ body {
   color: var(--gold);
   letter-spacing: 0.1em;
 }
-
+ 
 /* About box — dashed gold border, same as design */
 .profile-about-box {
   width: 100%;
@@ -705,7 +737,7 @@ body {
   color: var(--muted);
   line-height: 1.75;
 }
-
+ 
 /* Skills — matches about-block style */
 .profile-skills-row {
   width: 100%;
@@ -749,7 +781,7 @@ body {
   border: 1px solid var(--gold);
   font-weight: 600;
 }
-
+ 
 /* Bottom row */
 .profile-bottom-row {
   width: 100%;
@@ -767,7 +799,7 @@ body {
   background: var(--gold);
   opacity: 0.6;
 }
-
+ 
 /* Portfolio button — same style as browser-frame nav active-gold */
 .profile-portfolio-btn {
   font-size: 10px;
@@ -782,7 +814,7 @@ body {
   transition: color 0.2s, border-color 0.2s;
 }
 .profile-portfolio-btn:hover { color: var(--gold); border-color: var(--gold); }
-
+ 
 /* Mobile */
 @media (max-width: 480px) {
   .profile-card-body { padding: 20px 16px 16px; }
