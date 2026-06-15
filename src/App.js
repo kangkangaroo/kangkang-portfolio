@@ -42,7 +42,7 @@ function HomeSection() {
           <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
         </div>
         <div className="hero-avatar-placeholder">
-          <span className="avatar-silhouette">🧑‍💻</span>
+          <img src="/frame1.png" alt="Kangkang art" className="hero-frame-img" />
         </div>
       </div>
     </div>
@@ -219,9 +219,7 @@ function ProfileCard({ onViewPortfolio }) {
         <div className="profile-card-body">
           {/* Avatar */}
           <div className="profile-avatar-wrap">
-            <div className="profile-avatar">
-              <img src="/kangkang.jpg" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
-            </div>
+            <div className="profile-avatar">🧑‍🎨</div>
           </div>
 
           {/* Name + title */}
@@ -230,17 +228,17 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* Contact row */}
           <div className="profile-contacts">
-            <div className="profile-contact-item">
+            <a href="mailto:kangkangaroooooo@gmail.com" className="profile-contact-item">
               <span className="profile-contact-icon">✉</span>
-              <span>
-                <a href="mailto:kangkangaroooooo@gmail.com">kangkangaroooooo@gmail.com</a>
-                {' / '}
-                <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
-              </span>
-            </div>
-            <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
-              <span className="profile-contact-icon">@</span>
-              <span>kangkangaroooooo</span>
+              <span>kangkangaroooooo@gmail.com</span>
+            </a>
+            <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="profile-contact-item">
+              <span className="profile-contact-icon">f</span>
+              <span>kang kang</span>
+            </a>
+            <a href="https://instagram.com/kangkangaroo" target="_blank" rel="noreferrer" className="profile-contact-item">
+              <span className="profile-contact-icon">◎</span>
+              <span>kangkangaroo</span>
             </a>
           </div>
 
@@ -251,7 +249,7 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* About box */}
           <div className="profile-about-box">
-            <p>"Hey there! I go by Kangkang — an aspiring digital artist and web designer. I may not be a professional yet, but I pour my heart into every artwork, layout, and concept I bring to life. For me, every project is a chance to blend creativity with functionality and make something truly unique." ∧_∧</p>
+            <p>"Hey there! I go by the screen name Kangkang, an aspiring digital artist and web designer. While I'm not yet a professional, I enjoy crafting creative artwork, designing sleek and user-friendly web layouts, and exploring new ways to bring concepts to life online. Every project is a chance to combine creativity with functionality and make something unique." ∧_∧</p>
           </div>
 
           {/* Skills */}
@@ -260,9 +258,7 @@ function ProfileCard({ onViewPortfolio }) {
             <div className="profile-skills-group">
               <span className="profile-skills-sublabel">technical</span>
               <div className="profile-skills">
-                {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX', 'ibis Paint X',
-                  'XAMMP', 'My SQL Workbench', 'Microsoft Office', 'Google Workspace'
-                ].map(s => (
+                {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX'].map(s => (
                   <span key={s} className="profile-skill-tag">{s}</span>
                 ))}
               </div>
@@ -270,7 +266,7 @@ function ProfileCard({ onViewPortfolio }) {
             <div className="profile-skills-group">
               <span className="profile-skills-sublabel">soft skills</span>
               <div className="profile-skills">
-                {['Creative Thinking', 'Attention to Detail', 'Communication', 'Willingness to Learn'].map(s => (
+                {['Creative Thinking', 'Attention to Detail', 'Communication', 'Fast Learner'].map(s => (
                   <span key={s} className="profile-skill-tag profile-skill-tag--soft">{s}</span>
                 ))}
               </div>
