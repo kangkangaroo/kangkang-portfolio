@@ -236,14 +236,10 @@ function ProfileCard({ onViewPortfolio }) {
                 <a href="mailto:ibmora00@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>ibmora00@gmail.com</a>
               </span>
             </div>
-            <div className="profile-contact-item">
+            <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
               <span className="profile-contact-icon">@</span>
-              <span>
-                <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo</a>
-                {' / '}
-                <a href="https://instagram.com/issaaaaaang" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>issaaaaaang</a>
-              </span>
-            </div>
+              <span>kangkangaroooooo</span>
+            </a>
           </div>
 
           {/* Divider */}
