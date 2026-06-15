@@ -33,17 +33,13 @@ const SERVICE_DATA = {
 // ── Portfolio sections ────────────────────────────────────────────────────────
 function HomeSection() {
   return (
-    <div className="section-content">
-      <div className="hero-inner">
-        <div className="hero-text">
-          <div className="hero-caption">mabuhay! you can call me Kangkang, a UI/UX designer</div>
-          <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
-          <p className="hero-desc">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. I'm eager to learn and take on new challenges! (ᴗ ˘ᴗ) ˘ˇ "</p>
-          <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
-        </div>
-        <div className="hero-avatar-placeholder">
-          <img src="/frame1.png" alt="Kangkang art" className="hero-frame-img" />
-        </div>
+    <div className="section-content hero-bg" style={{ backgroundImage: 'url(/frame1.png)' }}>
+      <div className="hero-overlay" />
+      <div className="hero-text">
+        <div className="hero-caption">mabuhay! you can call me Kangkang, a UI/UX designer</div>
+        <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
+        <p className="hero-desc">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. I'm eager to learn and take on new challenges! (ᴗ ˘ᴗ) ˘ˇ "</p>
+        <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
       </div>
     </div>
   );
