@@ -249,7 +249,7 @@ function ProfileCard({ onViewPortfolio }) {
 
           {/* About box */}
           <div className="profile-about-box">
-            <p>"Hey there! I go by the screen name Kangkang, an aspiring digital artist and web designer. While I'm not yet a professional, I enjoy crafting creative artwork, designing sleek and user-friendly web layouts, and exploring new ways to bring concepts to life online. Every project is a chance to combine creativity with functionality and make something unique." ∧_∧</p>
+            <p>"Hey there! I go by Kangkang — an aspiring digital artist and web designer. I may not be a professional yet, but I pour my heart into every artwork, layout, and concept I bring to life. For me, every project is a chance to blend creativity with functionality and make something truly unique." ∧_∧</p>
           </div>
 
           {/* Skills */}
