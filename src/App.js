@@ -219,7 +219,9 @@ function ProfileCard({ onViewPortfolio }) {
         <div className="profile-card-body">
           {/* Avatar */}
           <div className="profile-avatar-wrap">
-            <div className="profile-avatar">🧑‍🎨</div>
+            <div className="profile-avatar">
+              <img scr="/kangkang.png" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
+            </div>
           </div>
 
           {/* Name + title */}
