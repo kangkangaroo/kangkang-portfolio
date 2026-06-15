@@ -148,8 +148,8 @@ body {
 
 .hero-bg {
   position: relative;
-  background-size: 120%;
-  background-position: center center;
+  background-size: 130%;
+  background-position: right center;
   background-repeat: no-repeat;
   min-height: 220px;
   padding: 28px !important;
