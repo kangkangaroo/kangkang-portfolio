@@ -220,7 +220,7 @@ function ProfileCard({ onViewPortfolio }) {
           {/* Avatar */}
           <div className="profile-avatar-wrap">
             <div className="profile-avatar">
-              <img scr="public/kangkang.jpg" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
+              <img src="/kangkang.jpg" alt="Kangkang" style={{width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} />
             </div>
           </div>
 
