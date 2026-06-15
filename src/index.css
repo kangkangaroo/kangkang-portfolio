@@ -111,13 +111,7 @@ body {
 }
 
 /* ─── HERO ─────────────────────────────────────── */
-.hero-inner {
-  display: grid;
-  grid-template-columns: 1fr 140px;
-  gap: 12px;
-  align-items: start;
-  min-height: 160px;
-}
+
 .hero-text {}
 .hero-caption {
   font-size: 10px;
@@ -138,40 +132,6 @@ body {
   color: var(--muted);
   line-height: 1.75;
   max-width: 320px;
-}
-.hero-avatar {
-  width: 140px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid var(--frame-border);
-  background: #252528;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 10px;
-  text-align: center;
-  overflow: hidden;
-}
-.hero-avatar-placeholder {
-  width: 140px;
-  height: 160px;
-  background: linear-gradient(135deg, #252528 0%, #1e1e22 100%);
-  border: 1px solid var(--frame-border);
-  border-radius: 4px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-}
-.avatar-silhouette {
-  font-size: 5rem;
-  line-height: 1;
-  filter: grayscale(1) brightness(0.4);
-  position: absolute;
-  bottom: -8px;
 }
 
 .hero-profile-link {
