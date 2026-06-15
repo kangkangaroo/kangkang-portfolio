@@ -66,7 +66,7 @@ function AboutSection() {
         <div className="about-block-title">what I do</div>
         <ul className="about-list">
           <li>character illustration</li>
-          <li>UI/UX web design — wireframing &amp; prototyping</li>
+          <li>UI/UX web design</li>
           <li>front-end web development</li>
         </ul>
       </div>
