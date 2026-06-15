@@ -542,6 +542,28 @@ body {
   white-space: nowrap;
 }
 .back-btn:hover { color: var(--gold); }
+
+.hero-bg {
+  position: relative;
+  background-size: cover;
+  background-position: right center;
+  background-repeat: no-repeat;
+  min-height: 220px;
+  padding: 28px !important;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(18,18,20,0.92) 45%, rgba(18,18,20,0.3) 100%);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.hero-bg .hero-text {
+  position: relative;
+  z-index: 1;
+}
  
 /* ══════════════════════════════════════════════════════
    PROFILE CARD — matches portfolio browser-frame style
