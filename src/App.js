@@ -70,21 +70,14 @@ function AboutSection() {
           <li>front-end web development</li>
         </ul>
       </div>
-      <div className="about-block">
-        <div className="about-block-title">currently</div>
-        <ul className="about-list">
-          <li>building my portfolio</li>
-          <li>learning React & JavaScript</li>
-          <li>open for commissions & collaborations</li>
-        </ul>
-      </div>
-      <div className="about-block">
-        <div className="about-block-title">built with</div>
-        <ul className="about-list">
-          <li>React · HTML · CSS · JavaScript</li>
-          <li>VS Code · Vercel</li>
-        </ul>
-      </div>
+        <div className="about-block">
+          <div className="about-block-title">currently</div>
+          <ul className="about-list">
+            <li>building & deploying my portfolio with React & Vercel</li>
+            <li>learning and improving every day</li>
+            <li>open for commissions & collaborations</li>
+          </ul>
+        </div>
     </div>
   );
 }
