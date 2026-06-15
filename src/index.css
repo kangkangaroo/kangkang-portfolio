@@ -616,17 +616,32 @@ body {
   flex-direction: column;
   align-items: center;
 }
+
+/* Cover photo */
+.profile-cover {
+  width: calc(100% + 56px);
+  height: 110px;
+  background-image: url('/frame1.png');
+  background-size: 120%;
+  background-position: 110% center;
+  margin: -28px -28px 0 -28px;
+  flex-shrink: 0;
+}
+
+/* Pull avatar up to overlap the cover */
+.profile-avatar-wrap {
+  margin-top: -38px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 12px;
+}
  
 /* Avatar */
 .profile-avatar-wrap { margin-bottom: 12px; }
+/* Dark ring + gold outline so avatar pops from cover */
 .profile-avatar {
-  width: 76px; height: 76px;
-  border-radius: 50%;
-  border: 2px solid var(--gold);
-  background: linear-gradient(135deg, #2a2a2e, #1e1e22);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.6rem;
-  overflow: hidden;
+  border: 3px solid var(--frame-bg);
+  outline: 2px solid var(--gold);
 }
  
 /* Name */

@@ -213,6 +213,8 @@ function ProfileCard({ onViewPortfolio }) {
 
         {/* Card body */}
         <div className="profile-card-body">
+          {/* cover photo */}
+          <div className="profile-cover" />
           {/* Avatar */}
           <div className="profile-avatar-wrap">
             <div className="profile-avatar">
