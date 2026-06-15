@@ -4,8 +4,8 @@ import './index.css';
 // ── Service data ──────────────────────────────────────────────────────────────
 const SERVICE_DATA = {
   'digital artist': {
-    quote: 'I use Procreate to bring my ideas to life with the help of my mobile phone!',
-    tool: 'Procreate', toolIcon: '🎨',
+    quote: 'I use ibis Paint X to bring my ideas to life with the help of my mobile phone!',
+    tool: 'ibis Paint X', toolIcon: '🎨',
     projects: [
       { emoji: '🧑‍🎨', label: 'Character Art' },
       { emoji: '🌸', label: 'Illustration' },
@@ -83,12 +83,12 @@ function AboutSection() {
 }
 
 function ServicesSection() {
-  const [activeService, setActiveService] = useState('ui/ux designer');
+  const [activeService, setActiveService] = useState('digital artist');
   const svcData = SERVICE_DATA[activeService];
   return (
     <div className="section-content">
-      <div className="services-hero">
-        <div className="services-hero-placeholder">🎨</div>
+      <div className="services-hero" style={{ backgroundImage: 'url(/frame1.png)', backgroundSize: '120%', backgroundPosition: '110% center' }}>
+        <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
             <span className="star-prefix">★—</span> welcome!<br />here's what I can do
