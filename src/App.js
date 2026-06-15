@@ -231,9 +231,9 @@ function ProfileCard({ onViewPortfolio }) {
             <div className="profile-contact-item">
               <span className="profile-contact-icon">✉</span>
               <span>
-                <a href="mailto:kangkangaroooooo@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>kangkangaroooooo@gmail.com</a>
+                <a href="mailto:kangkangaroooooo@gmail.com">kangkangaroooooo@gmail.com</a>
                 {' / '}
-                <a href="mailto:ibmora00@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>ibmora00@gmail.com</a>
+                <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
               </span>
             </div>
             <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">

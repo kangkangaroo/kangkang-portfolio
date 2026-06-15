@@ -690,6 +690,18 @@ body {
   font-size: 9px; flex-shrink: 0;
   background: #2a2a2e;
 }
+
+.profile-contact-item a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.profile-contact-item a:hover {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
  
 /* Divider — matches about-block-title style */
 .profile-divider {
