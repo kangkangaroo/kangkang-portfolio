@@ -82,7 +82,7 @@ function AboutSection() {
         <div className="about-block-title">built with</div>
         <ul className="about-list">
           <li>React · HTML · CSS · JavaScript</li>
-          <li>VS Code</li>
+          <li>VS Code · Vercel</li>
         </ul>
       </div>
     </div>
