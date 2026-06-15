@@ -48,7 +48,9 @@ function AboutSection() {
   return (
     <div className="section-content">
       <div className="about-avatar-row">
-        <div className="about-avatar-circle">🧑‍🎨</div>
+        <div className="about-avatar-circle">
+          <img src="/kangkang.jpg" alt="Kangkang" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+        </div>
         <div className="about-name">kangkang</div>
       </div>
       <p className="about-tagline">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. "</p>
