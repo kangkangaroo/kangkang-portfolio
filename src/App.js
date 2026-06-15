@@ -82,7 +82,7 @@ function AboutSection() {
         <div className="about-block-title">built with</div>
         <ul className="about-list">
           <li>React · HTML · CSS · JavaScript</li>
-          <li>VS Code · XAMPP</li>
+          <li>VS Code</li>
         </ul>
       </div>
     </div>
