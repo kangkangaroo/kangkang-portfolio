@@ -51,14 +51,14 @@ function AboutSection() {
         <div className="about-avatar-circle">
           <img src="/kangkang.png" alt="Kangkang" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
         </div>
-        <div className="about-name">kangkang</div>
+        <div className="about-name">KANGKANG</div>
       </div>
-      <p className="about-tagline">" a digital artist and web designer with a love for anime-inspired visuals and clean, functional designs. "</p>
+      <p className="about-tagline">" digital artist · web designer · anime-inspired visuals "</p>
       <div className="about-block">
         <div className="about-block-title">short intro</div>
         <ul className="about-list">
           <li>pronouns: she/her</li>
-          <li>nationality: Filipino</li>
+          <li>nationality: Filipino 🇵🇭</li>
           <li>personality: introverted, and detail-oriented — I enjoy calm, and focused creative work</li>
         </ul>
       </div>
