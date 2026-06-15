@@ -621,7 +621,7 @@ body {
 .profile-cover {
   width: calc(100% + 56px);
   height: 120px;
-  background-image: url('/frame1.png');
+  background-image: url('../public/frame1.png');
   background-size: 120%;
   background-position: 110% center;
   margin: 0 -28px 0 -28px;
