@@ -1,31 +1,102 @@
 import { useState } from 'react';
 import './index.css';
 
+// ── Global floating decorations (stars + star-circles) ────────────────────────
+// These sit fixed on the screen behind everything, visible on every page.
+const DECO_ITEMS = [
+  // ── TOP LEFT — hero star + 1 small accent (removed the crowding mid-sizes)
+  { size: '5.5rem', top: '13%',  left: '3%',   delay: '0s',    opacity: 1,    glyph: '★' },
+  { size: '1.1rem', top: '7%',   left: '17%',  delay: '0.7s',  opacity: 0.55, glyph: '★' },
+  { size: '1.9rem', top: '29%',  left: '13%',  delay: '2s',    opacity: 0.5,  glyph: '★' },
+  // ── TOP RIGHT — circles + star
+  { size: '3.2rem', top: '7%',   right: '3%',  delay: '0.4s',  opacity: 0.85, glyph: '●' },
+  { size: '1rem',   top: '4%',   right: '12%', delay: '1.1s',  opacity: 0.55, glyph: '●' },
+  { size: '1.6rem', top: '17%',  right: '2%',  delay: '1.8s',  opacity: 0.65, glyph: '★' },
+  // ── MID LEFT — flanking the frame
+  { size: '1.2rem', top: '44%',  left: '2%',   delay: '0.5s',  opacity: 0.45, glyph: '★' },
+  { size: '0.7rem', top: '52%',  left: '11%',  delay: '1.6s',  opacity: 0.35, glyph: '●' },
+  { size: '2.1rem', top: '60%',  left: '4%',   delay: '0.9s',  opacity: 0.6,  glyph: '●' },
+  { size: '0.9rem', top: '68%',  left: '14%',  delay: '2.3s',  opacity: 0.4,  glyph: '★' },
+  // ── MID RIGHT — flanking the frame
+  { size: '0.8rem', top: '42%',  right: '9%',  delay: '1.4s',  opacity: 0.4,  glyph: '★' },
+  { size: '1.8rem', top: '50%',  right: '2%',  delay: '0.3s',  opacity: 0.55, glyph: '●' },
+  { size: '1.1rem', top: '62%',  right: '11%', delay: '1.9s',  opacity: 0.45, glyph: '●' },
+  { size: '0.65rem',top: '72%',  right: '5%',  delay: '2.6s',  opacity: 0.3,  glyph: '★' },
+  // ── BOTTOM LEFT
+  { size: '2.8rem', top: '80%',  left: '3%',   delay: '1.0s',  opacity: 0.75, glyph: '★' },
+  { size: '1.0rem', top: '88%',  left: '13%',  delay: '0.2s',  opacity: 0.45, glyph: '●' },
+  { size: '0.75rem',top: '93%',  left: '6%',   delay: '1.7s',  opacity: 0.35, glyph: '★' },
+  { size: '1.5rem', top: '76%',  left: '18%',  delay: '2.4s',  opacity: 0.5,  glyph: '●' },
+  // ── BOTTOM RIGHT
+  { size: '1.3rem', top: '78%',  right: '4%',  delay: '0.6s',  opacity: 0.55, glyph: '●' },
+  { size: '2.4rem', top: '85%',  right: '2%',  delay: '1.5s',  opacity: 0.75, glyph: '★' },
+  { size: '0.8rem', top: '91%',  right: '13%', delay: '0.8s',  opacity: 0.35, glyph: '●' },
+  { size: '1.1rem', top: '96%',  right: '6%',  delay: '2.1s',  opacity: 0.45, glyph: '★' },
+];
+
+function FloatingDeco() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none',
+        zIndex: 0,
+        overflow: 'hidden',
+      }}
+    >
+      {DECO_ITEMS.map((d, i) => (
+        <span
+          key={i}
+          style={{
+            position: 'absolute',
+            top:    d.top    || 'auto',
+            bottom: d.bottom || 'auto',
+            left:   d.left   || 'auto',
+            right:  d.right  || 'auto',
+            fontSize: d.size,
+            color: 'var(--gold)',
+            opacity: d.opacity,
+            lineHeight: 1,
+            filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.7)) drop-shadow(0 0 20px rgba(201,168,76,0.35))',
+            animation: `starFloat 4s ease-in-out ${d.delay} infinite`,
+          }}
+        >
+          {d.glyph}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ── Service data ──────────────────────────────────────────────────────────────
 const SERVICE_DATA = {
-  'digital artist': {
-    quote: 'I use ibis Paint X to bring my ideas to life with the help of my mobile phone!',
-    tool: 'ibis Paint X', toolIcon: '🎨',
-    projects: [
-      { emoji: '🧑‍🎨', label: 'Character Art' },
-      { emoji: '🌸', label: 'Illustration' },
-      { emoji: '✨', label: 'Digital Painting' },
-    ],
-  },
+    'digital artist': {
+      quote: 'One brushstroke at a time — all from my phone! ⸜(｡˃ ᵕ ˂ )⸝',
+      tool: 'ibis Paint X', toolIcon: '🎨',
+      projects: [
+        { label: '1' },
+        { label: '2' },
+        { label: '3' },
+        { label: '4' },
+        { label: '5' },
+      ],
+    },
   'ui/ux designer': {
-    quote: 'I use Figma to visualise and bring my ideas to life!',
+    quote: 'If I can imagine it, Figma helps me build it!',
     tool: 'Figma', toolIcon: '🔷',
     projects: [
-      { title: 'your portfolio', sub: 'ui/ux design · figma prototype', emoji: '🗂️' },
-      { title: 'profile card',   sub: 'ui/ux design · figma prototype', emoji: '🪪' },
+      { title: 'portfolio', sub: 'ui/ux design · figma prototype', img: '/f1.png', link: 'https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=360-35&t=QppVUxLHnlqnkizB-1' },
+      { title: 'profile card',   sub: 'ui/ux design · figma prototype', img: '/f2.png', link: 'https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=454-28&t=QppVUxLHnlqnkizB-1' },
+      {title: 'expenses tracker', sub: 'ui/ux design', img: '/f3.png', link: 'https://www.figma.com/proto/bZ7kVBbwCpK7ZJa0KQ5k7m/Projects?node-id=1-2&t=vGvNRepkjiIVr6jy-1' },
     ],
   },
   'web developer': {
-    quote: 'I use Visual Studio with html, css and basic javascript, and I also design and build websites on wix.',
+    quote: 'Turning designs into real websites, one line of code at a time!',
     tool: 'VS Code + Wix', toolIcon: '💻',
     projects: [
-      { title: '8more',       sub: 'coming soon page · link in bio', emoji: '🌐' },
-      { title: 'coming soon', sub: 'coming soon page',               emoji: '🚧' },
+      { title: 'kangkang-portfolio',       sub: 'personal portfolio · react.js · vercel', img: '/s1.png', link: 'kangkang-portfolio.vercel.app' },
+      { title: 'gvc-portfolio', sub: 'academic project · wix', img: '/s2.png', link: 'https://belamora04.wixsite.com/ibmora0' },
     ],
   },
 };
@@ -47,12 +118,7 @@ function HomeSection() {
 function AboutSection() {
   return (
     <div className="section-content">
-      <div className="about-avatar-row">
-        <div className="about-avatar-circle">
-          <img src="/kangkang.png" alt="Kangkang" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-        </div>
-        <div className="about-name">KANGKANG</div>
-      </div>
+      <div className="about-cover-strip" />
       <p className="about-tagline">" digital artist · web designer · anime-inspired visuals "</p>
       <div className="about-block">
         <div className="about-block-title">short intro</div>
@@ -82,12 +148,13 @@ function AboutSection() {
   );
 }
 
-function ServicesSection() {
+function ServicesSection({ onPreview }) {
   const [activeService, setActiveService] = useState('digital artist');
   const svcData = SERVICE_DATA[activeService];
+
   return (
     <div className="section-content">
-      <div className="services-hero" style={{ backgroundImage: 'url(/frame1.png)', backgroundSize: '120%', backgroundPosition: '110% center' }}>
+      <div className="services-hero" style={{ backgroundImage: 'url(/frame1.png)', backgroundSize: '120%', backgroundPosition: '90% center' }}>
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -101,25 +168,42 @@ function ServicesSection() {
         ))}
       </div>
       <p className="service-quote">"{svcData.quote}"</p>
+
       {activeService === 'digital artist' ? (
-        <div className="project-grid-small">
+        <div className="artwork-scroll">
           {svcData.projects.map((p, i) => (
-            <div key={i} className="project-thumb">
-              <span style={{ fontSize: '2rem' }}>{p.emoji}</span>
-              <div className="project-thumb-label">{p.label}</div>
+            <div key={i} className="artwork-item" onClick={() => onPreview(`/${i + 1}.png`)}>
+              <img src={`/${i + 1}.png`} alt={p.label} className="artwork-img" />
             </div>
           ))}
         </div>
-      ) : (
-        <div className="service-projects-grid">
-          {svcData.projects.map((p, i) => (
-            <div key={i} className="service-project-card">
-              <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>{p.emoji}</div>
-              <h4>{p.title}</h4><p>{p.sub}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        ) : (
+          <div className="service-scroll">
+            {svcData.projects.map((p, i) => (
+              <div key={i} className="service-scroll-card">
+                {p.img && (
+                  <div className="service-project-cover">
+                    <img src={p.img} alt={p.title} />
+                  </div>
+                )}
+                {!p.img && p.emoji && (
+                  <div className="service-scroll-emoji">{p.emoji}</div>
+                )}
+                <div className="service-project-info">
+                  <h4>
+                    {p.link ? (
+                      <a href={p.link} target="_blank" rel="noreferrer" className="service-title-link">{p.title} ↗</a>
+                    ) : (
+                      p.title
+                    )}
+                  </h4>
+                  <p>{p.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
       <div className="tool-badge"><span>{svcData.toolIcon}</span><span>{svcData.tool}</span></div>
     </div>
   );
@@ -131,10 +215,17 @@ function ContactSection() {
       <h2 className="section-title"><span className="star-prefix">★—</span> get in touch with me!</h2>
       <p className="contact-intro">looking for a way to contact me? I've got you!</p>
       <div className="contact-group">
-        <div className="contact-group-title">main and personal account</div>
-        <a href="mailto:kangkangaroooooo@gmail.com" className="contact-item"><span className="contact-icon">✉</span><span>kangkangaroooooo@gmail.com</span></a>
-        <a href="https://facebook.com/kangkang" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">f</span><span>kang kang</span></a>
-        <a href="https://instagram.com/kangkangaroo" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">◎</span><span>kangkangaroo</span></a>
+        <div className="contact-group-title">my work account</div>
+            <div className="profile-contact-item contact-item">
+              <span className="profile-contact-icon contact-icon">✉</span>
+              <span>
+                <a href="mailto:kangkangaroooooo@gmail.com">kangkangaroooooo@gmail.com</a>
+                {' / '}
+                <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
+              </span>
+            </div>
+        <a href="https://www.facebook.com/profile.php?id=61590355995156" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">f</span><span>Issabela Mora</span></a>
+        <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">@</span><span>kangkangaroooooo</span></a>
       </div>
       <a href="/resume.pdf" download className="btn-gold" style={{ marginTop: '8px' }}>↓ Download Résumé</a>
     </div>
@@ -152,42 +243,57 @@ const TAB_URLS = {
 
 function Portfolio({ onBack }) {
   const [activeTab, setActiveTab] = useState('home');
+  const [lightbox, setLightbox] = useState(null);
 
   const renderSection = () => {
     switch (activeTab) {
       case 'home':         return <HomeSection />;
       case 'about me':     return <AboutSection />;
-      case 'services':     return <ServicesSection />;
+      case 'services':     return <ServicesSection onPreview={setLightbox} />;
       case 'get in touch': return <ContactSection />;
       default:             return <HomeSection />;
     }
   };
 
   return (
-    <div className="page single">
-      <div style={{ position: 'relative' }}>
-        <div className="browser-frame">
-          <div className="browser-bar">
-            <div className="browser-dots">
-              <span className="dot-red" />
-              <span className="dot-yellow" />
-              <span className="dot-green" />
+    <>
+      {/* Lightbox is NOW outside the browser frame — no clipping! */}
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <div className="lightbox-card" onClick={e => e.stopPropagation()}>
+            <div className="lightbox-card-bar">
+              <button className="lightbox-close" onClick={() => setLightbox(null)}>✕</button>
             </div>
-            <div className="browser-url">{TAB_URLS[activeTab]}</div>
-            <button className="back-btn" onClick={onBack}>← back</button>
+            <img src={lightbox} alt="preview" className="lightbox-img" />
           </div>
-          <div key={activeTab} className="tab-panel">{renderSection()}</div>
-          <nav className="nav-tabs">
-            {TABS.map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={activeTab === tab ? (tab === 'get in touch' ? 'active active-gold' : 'active') : ''}>
-                {tab}
-              </button>
-            ))}
-          </nav>
+        </div>
+      )}
+
+      <div className="page single">
+        <div style={{ position: 'relative' }}>
+          <div className="browser-frame">
+            <div className="browser-bar">
+              <div className="browser-dots">
+                <span className="dot-red" />
+                <span className="dot-yellow" />
+                <span className="dot-green" />
+              </div>
+              <div className="browser-url">{TAB_URLS[activeTab]}</div>
+              <button className="back-btn" onClick={onBack}>← back</button>
+            </div>
+            <div key={activeTab} className="tab-panel">{renderSection()}</div>
+            <nav className="nav-tabs">
+              {TABS.map((tab) => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  className={activeTab === tab ? (tab === 'get in touch' ? 'active active-gold' : 'active') : ''}>
+                  {tab}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -195,20 +301,6 @@ function Portfolio({ onBack }) {
 function ProfileCard({ onViewPortfolio }) {
   return (
     <div className="profile-bg">
-      {/* Decorative stars — left */}
-      <div className="profile-deco-stars" aria-hidden="true">
-        <span className="deco-star deco-star--xl">★</span>
-        <span className="deco-star deco-star--lg">★</span>
-        <span className="deco-star deco-star--sm">★</span>
-        <span className="deco-star deco-star--xs">★</span>
-      </div>
-      {/* Decorative circles — right */}
-      <div className="profile-deco-right" aria-hidden="true">
-        <span className="deco-circle deco-circle--md" />
-        <span className="deco-circle deco-circle--lg" />
-        <span className="deco-circle deco-circle--sm" />
-      </div>
-
       <div className="profile-card">
         {/* Browser-style top bar */}
         <div className="profile-card-bar">
@@ -270,7 +362,7 @@ function ProfileCard({ onViewPortfolio }) {
               <span className="profile-skills-sublabel">technical</span>
               <div className="profile-skills">
                 {['Figma', 'HTML', 'CSS', 'JavaScript', 'WIX', 'ibis Paint X',
-                  'XAMMP', 'My SQL Workbench', 'Microsoft Office', 'Google Workspace'
+                  'React.js', 'Vercel'
                 ].map(s => (
                   <span key={s} className="profile-skill-tag">{s}</span>
                 ))}
@@ -309,6 +401,15 @@ function ProfileCard({ onViewPortfolio }) {
 export default function App() {
   const [view, setView] = useState('profile'); // 'profile' | 'portfolio'
 
-  if (view === 'portfolio') return <Portfolio onBack={() => setView('profile')} />;
-  return <ProfileCard onViewPortfolio={() => setView('portfolio')} />;
+  return (
+    <>
+      {/* Floating stars + circles — always visible on every page */}
+      <FloatingDeco />
+
+      {view === 'portfolio'
+        ? <Portfolio onBack={() => setView('profile')} />
+        : <ProfileCard onViewPortfolio={() => setView('portfolio')} />
+      }
+    </>
+  );
 }

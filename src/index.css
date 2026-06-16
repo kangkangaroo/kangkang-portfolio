@@ -51,6 +51,11 @@ body {
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  box-shadow:
+    0 0 0 1px rgba(201,168,76,0.06),
+    0 8px 32px rgba(0,0,0,0.55),
+    0 2px 8px rgba(0,0,0,0.4),
+    0 0 60px rgba(201,168,76,0.07);
 }
 
 .browser-bar {
@@ -240,6 +245,16 @@ body {
 }
 .about-list li::before { content: '— '; color: var(--gold); }
 
+.about-cover-strip {
+  width: calc(100% + 56px);
+  height: 120px;
+  background-image: url('../public/frame1.png');
+  background-size: 120%;
+  background-position: 110% center;
+  margin: -28px -28px 20px -28px;
+  flex-shrink: 0;
+}
+
 /* ─── SERVICES ─────────────────────────────────── */
 .services-hero {
   position: relative;
@@ -297,6 +312,82 @@ body {
   padding-left: 10px;
   border-left: 2px solid var(--gold);
 }
+
+.service-project-cover {
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+  margin: -12px -12px 10px -12px;
+  width: calc(100% + 24px);
+}
+.service-project-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.service-project-info { padding: 8px 10px 10px; }
+.service-project-info h4 { font-size: 11px; color: var(--white); margin-bottom: 3px; }
+.service-project-info p  { font-size: 10px; color: var(--muted); }
+
+/* ─── SERVICE HORIZONTAL SCROLL ─────────────────── */
+.service-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--frame-border);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.service-scroll::-webkit-scrollbar { height: 4px; }
+.service-scroll::-webkit-scrollbar-track { background: var(--frame-border); border-radius: 2px; }
+.service-scroll::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+.service-scroll-card {
+  flex: 0 0 calc(50% - 5px); /* shows exactly 2 at a time */
+  scroll-snap-align: start;
+  background: #1e1e20;
+  border: 1px solid var(--frame-border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.service-scroll-card:hover { border-color: var(--gold); }
+
+.service-scroll-emoji {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  background: #252528;
+}
+
+.service-project-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s;
+}
+.service-project-link:hover { opacity: 0.7; }
+
+.service-title-link {
+  color: var(--white);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.service-title-link:hover { color: var(--gold); }
 
 .project-grid-small {
   display: grid;
@@ -577,12 +668,17 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 600px;                      /* same max-width as portfolio .page */
+  max-width: 600px;
   background: var(--frame-bg);
-  border: 1px solid var(--frame-border); /* matches browser-frame border */
-  border-radius: 10px;                   /* matches browser-frame border-radius */
+  border: 1px solid var(--frame-border);
+  border-radius: 10px;
   overflow: hidden;
   animation: cardFadeIn 0.5s ease forwards;
+  box-shadow:
+    0 0 0 1px rgba(201,168,76,0.06),
+    0 8px 32px rgba(0,0,0,0.55),
+    0 2px 8px rgba(0,0,0,0.4),
+    0 0 60px rgba(201,168,76,0.07);
 }
 @keyframes cardFadeIn {
   from { opacity: 0; transform: translateY(16px); }
@@ -702,6 +798,10 @@ body {
   text-underline-offset: 2px;
 }
  
+.profile-contact-item.contact-item {
+  padding: 8px 0;
+}
+
 /* Divider — matches about-block-title style */
 .profile-divider {
   width: 100%;
@@ -814,11 +914,178 @@ body {
 }
 .profile-portfolio-btn:hover { color: var(--gold); border-color: var(--gold); }
  
-/* Mobile */
+/* ─── MOBILE RESPONSIVE ─────────────────────────── */
 @media (max-width: 480px) {
-  .profile-card-body { padding: 20px 16px 16px; }
+
+  /* Page wrapper */
+  .page { padding: 0; }
+  .page.single { padding: 0; min-height: 100vh; }
+
+  /* Browser frame fills screen edge to edge */
+  .browser-frame { border-radius: 0; border-left: none; border-right: none; }
+
+  /* Section padding tighter on mobile */
+  .section-content { padding: 20px 16px 16px; }
+
+  /* Hero */
+  .hero-bg {
+    min-height: 180px;
+    background-size: 220%;
+    background-position: 80% center;
+    padding: 20px !important;
+  }
+  .hero-title { font-size: 1.1rem; }
+  .hero-desc { font-size: 11px; max-width: 100%; }
+
+  /* Services hero banner */
+  .services-hero { min-height: 110px; }
+  .services-hero-text { padding: 14px; }
+  .section-title { font-size: 1rem; }
+
+  /* Service tabs — wrap on small screens */
+  .service-tabs { flex-wrap: wrap; gap: 5px; }
+  .service-tab { font-size: 10px; padding: 4px 10px; }
+
+  /* Artwork scroll — slightly smaller cards so you can see there's more */
+  .artwork-item { flex: 0 0 140px; width: 140px; }
+  .artwork-img { height: 175px; }
+
+  /* Project grid single column */
+  .service-projects-grid { grid-template-columns: 1fr; }
+
+  /* Nav tabs — smaller text so all 4 fit */
+  .nav-tabs button { font-size: 9.5px; padding: 10px 3px; letter-spacing: 0; }
+
+  /* Browser bar */
+  .browser-url { font-size: 9px; padding: 3px 6px; }
+  .back-btn { font-size: 9px; }
+
+  /* Profile card */
+  .profile-bg { padding: 0; align-items: flex-start; }
+  .profile-card { border-radius: 0; border-left: none; border-right: none; max-width: 100%; }
+  .profile-card-body { padding: 0 16px 20px; }
+  .profile-cover { width: calc(100% + 32px); margin: 0 -16px; }
   .profile-name { font-size: 1.1rem; }
-  .profile-contacts { flex-direction: column; align-items: flex-start; }
+  .profile-contacts { flex-direction: column; align-items: flex-start; gap: 6px; }
   .profile-deco-stars { display: none; }
   .profile-deco-right { display: none; }
+
+  /* Bottom row stacks on very small screens */
+  .profile-bottom-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+  /* Lightbox close button easier to tap */
+  .lightbox-close { width: 36px; height: 36px; font-size: 16px; top: 12px; right: 12px; }
+}
+
+/* ─── ARTWORK HORIZONTAL SCROLL ──────────────────── */
+.artwork-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) var(--frame-border);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.artwork-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.artwork-scroll::-webkit-scrollbar-track {
+  background: var(--frame-border);
+  border-radius: 2px;
+}
+.artwork-scroll::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 2px;
+}
+.artwork-item {
+  flex: 0 0 160px;   /* ← was: flex: 0 0 auto; width: 160px */
+  width: 160px;
+  scroll-snap-align: start;
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--frame-border);
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.artwork-item:hover {
+  border-color: var(--gold);
+}
+.artwork-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.artwork-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(0, 0, 0, 0.72);
+  font-size: 9px;
+  color: var(--gold);
+  padding: 5px 8px;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* ─── LIGHTBOX ───────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tabFadeIn 0.2s ease forwards;
+  padding: 20px;
+}
+.lightbox-card {
+  background: var(--frame-bg);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+}
+.lightbox-card-bar {
+  background: #1e1e20;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--gold);
+  flex-shrink: 0;
+}
+.lightbox-close {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 16px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.lightbox-close:hover { opacity: 0.7; }
+.lightbox-img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(90vh - 45px);
+  display: block;
+  object-fit: contain;
+  padding: 12px;
 }
