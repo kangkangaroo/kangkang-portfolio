@@ -917,12 +917,14 @@ body {
 /* ─── MOBILE RESPONSIVE ─────────────────────────── */
 @media (max-width: 480px) {
 
-  /* Page wrapper */
-  .page { padding: 0; }
-  .page.single { padding: 0; min-height: 100vh; }
+  /* Page wrapper — keep a little breathing room so the frame
+     doesn't touch the screen edges, and stars can peek through */
+  .page { padding: 16px 12px; }
+  .page.single { padding: 16px 12px; min-height: 100vh; }
 
-  /* Browser frame fills screen edge to edge */
-  .browser-frame { border-radius: 0; border-left: none; border-right: none; }
+  /* Keep the browser frame's rounded corners and full border
+     instead of flattening it to the screen edges */
+  .browser-frame { border-radius: 10px; }
 
   /* Section padding tighter on mobile */
   .section-content { padding: 20px 16px 16px; }
