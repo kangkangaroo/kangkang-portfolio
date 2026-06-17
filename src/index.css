@@ -962,9 +962,9 @@ body {
   .browser-url { font-size: 9px; padding: 3px 6px; }
   .back-btn { font-size: 9px; }
 
-  /* Profile card */
-  .profile-bg { padding: 0; align-items: flex-start; }
-  .profile-card { border-radius: 0; border-left: none; border-right: none; max-width: 100%; }
+/* Profile card — same breathing room as the portfolio frame */
+  .profile-bg { padding: 16px 12px; align-items: flex-start; }
+  .profile-card { border-radius: 10px; max-width: 100%; }
   .profile-card-body { padding: 0 16px 20px; }
   .profile-cover { width: calc(100% + 32px); margin: 0 -16px; }
   .profile-name { font-size: 1.1rem; }
