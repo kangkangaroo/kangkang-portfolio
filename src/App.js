@@ -88,7 +88,7 @@ const SERVICE_DATA = {
     projects: [
       { title: 'portfolio', sub: 'ui/ux design · figma prototype', img: '/f1.png', link: 'https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=360-35&t=QppVUxLHnlqnkizB-1' },
       { title: 'profile card',   sub: 'ui/ux design · figma prototype', img: '/f2.png', link: 'https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=454-28&t=QppVUxLHnlqnkizB-1' },
-      {title: 'expenses tracker', sub: 'ui/ux design', img: '/f3.png', link: 'https://www.figma.com/proto/bZ7kVBbwCpK7ZJa0KQ5k7m/Projects?node-id=1-2&t=vGvNRepkjiIVr6jy-1' },
+      /* {title: 'expenses tracker', sub: 'ui/ux design', img: '/f3.png', link: 'https://www.figma.com/proto/bZ7kVBbwCpK7ZJa0KQ5k7m/Projects?node-id=1-2&t=vGvNRepkjiIVr6jy-1' }, */
     ],
   },
   'web developer': {
