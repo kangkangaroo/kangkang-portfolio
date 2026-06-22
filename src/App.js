@@ -141,7 +141,7 @@ function AboutSection() {
           <ul className="about-list">
             <li>building & deploying my portfolio with React & Vercel</li>
             <li>learning and improving every day</li>
-            <li>open for commissions & collaborations</li>
+            {/* <li>open for commissions & collaborations</li> */}
           </ul>
         </div>
     </div>
