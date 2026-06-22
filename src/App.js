@@ -109,7 +109,7 @@ function HomeSection() {
       <div className="hero-text">
         <h1 className="hero-title"><span className="star-prefix">★—</span>welcome!<br />kangkang's here</h1>
         <p className="hero-desc">"mabuhay! you can call me kangkang — a digital artist and web designer with budding skills and a growing portfolio. i'm eager to learn and take on new challenges! ⸜(｡˃ ᵕ ˂ )⸝♡"</p>
-        <a href="/resume.pdf" download className="hero-profile-link">↓ Download Résumé</a>
+        <a href="/Issabela_Mora_Resume.pdf" download className="hero-profile-link">↓ Download Resume</a>
       </div>
     </div>
   );
@@ -227,7 +227,7 @@ function ContactSection() {
         <a href="https://www.facebook.com/profile.php?id=61590355995156" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">f</span><span>Issabela Mora</span></a>
         <a href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ==" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">@</span><span>kangkangaroooooo</span></a>
       </div>
-      <a href="/resume.pdf" download className="btn-gold" style={{ marginTop: '8px' }}>↓ Download Résumé</a>
+      <a href="/Issabela_Mora_Resume.pdf" download className="btn-gold" style={{ marginTop: '8px' }}>↓ Download Resume</a>
     </div>
   );
 }
