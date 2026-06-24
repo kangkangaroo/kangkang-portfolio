@@ -225,7 +225,7 @@ function ContactSection() {
               </span>
             </div>
         <a href="https://www.facebook.com/profile.php?id=61590355995156" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">f</span><span>Issabela Mora</span></a>
-        <a href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ==" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">@</span><span>kangkangaroooooo</span></a>
+        <a href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ==" target="_blank" rel="noreferrer" className="contact-item"><span className="contact-icon">@</span><span>kangkangarooo</span></a>
       </div>
       <a href="/Issabela_Mora_Resume.pdf" download className="btn-gold" style={{ marginTop: '8px' }}>↓ Download Resume</a>
     </div>
@@ -341,7 +341,7 @@ function ProfileCard({ onViewPortfolio }) {
             </div>
             <a href="https://instagram.com/kangkangaroooooo" target="_blank" rel="noreferrer" className="profile-contact-item">
               <span className="profile-contact-icon">@</span>
-              <span>kangkangaroooooo</span>
+              <span>kangkangarooo</span>
             </a>
           </div>
 
