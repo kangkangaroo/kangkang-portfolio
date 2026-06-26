@@ -690,112 +690,174 @@ const SOFT_SKILLS = [
   "Adaptability",
 ];
 
-function SkillsTab() {
-  const [showOther, setShowOther] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(
-    TECHNICAL_CATEGORIES[0].label,
-  );
-  const activeCatData = TECHNICAL_CATEGORIES.find(
-    (cat) => cat.label === activeCategory,
-  );
-
+function CollapsibleSkillGroup({ label, skills, isOpen, onToggle }) {
   return (
-    <div className="profile-skills-row">
-      <span className="profile-skills-sublabel">technical skills</span>
-      <div className="service-tabs skills-category-tabs">
-        {TECHNICAL_CATEGORIES.map((cat) => (
-          <button
-            key={cat.label}
-            className={`service-tab ${activeCategory === cat.label ? "active" : ""}`}
-            onClick={() => setActiveCategory(cat.label)}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-      <div className="profile-skills-group skills-active-category">
-        <p className="skill-text-list skill-text-list--primary">
-          {activeCatData.skills.map((s, i) => (
-            <span key={s}>
-              {s}
-              {i < activeCatData.skills.length - 1 && (
-                <span className="skill-text-dot">•</span>
-              )}
-            </span>
-          ))}
-        </p>
-      </div>
-
-      <button className="skills-toggle" onClick={() => setShowOther((v) => !v)}>
-        <span className={`skills-toggle-arrow ${showOther ? "open" : ""}`}>
-          ▸
-        </span>
-        other skills
+    <div className="skills-row-card">
+      <button className="skills-toggle" onClick={onToggle}>
+        <span className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}>▸</span>
+        {label}
       </button>
-      {showOther && (
-        <p className="skill-text-list skill-text-list--muted nested-skills">
-          {OTHER_SKILLS.map((s, i) => (
+      {isOpen && (
+        <p className="skill-text-list skill-text-list--primary nested-skills">
+          {skills.map((s, i) => (
             <span key={s}>
               {s}
-              {i < OTHER_SKILLS.length - 1 && (
+              {i < skills.length - 1 && (
                 <span className="skill-text-dot">•</span>
               )}
             </span>
           ))}
         </p>
       )}
+    </div>
+  );
+}
 
-      <div className="profile-skills-group">
-        <span className="profile-skills-sublabel">soft skills</span>
-        <p className="skill-text-list skill-text-list--soft">
-          {SOFT_SKILLS.map((s, i) => (
-            <span key={s}>
-              {s}
-              {i < SOFT_SKILLS.length - 1 && (
-                <span className="skill-text-dot">•</span>
-              )}
-            </span>
-          ))}
-        </p>
+function SkillsTab() {
+  const [activeSection, setActiveSection] = useState("technical");
+  const [openCategory, setOpenCategory] = useState(null);
+
+  const toggleCategory = (label) => {
+    setOpenCategory((prev) => (prev === label ? null : label));
+  };
+
+  return (
+    <div className="profile-skills-row">
+      <div className="service-tabs">
+        <button
+          className={`service-tab ${activeSection === "technical" ? "active" : ""}`}
+          onClick={() => setActiveSection("technical")}
+        >
+          technical
+        </button>
+        <button
+          className={`service-tab ${activeSection === "soft" ? "active" : ""}`}
+          onClick={() => setActiveSection("soft")}
+        >
+          soft skills
+        </button>
+      </div>
+
+      <div className="skills-panel">
+        {activeSection === "technical" ? (
+          <>
+            {TECHNICAL_CATEGORIES.map((cat) => (
+              <CollapsibleSkillGroup
+                key={cat.label}
+                label={cat.label}
+                skills={cat.skills}
+                isOpen={openCategory === cat.label}
+                onToggle={() => toggleCategory(cat.label)}
+              />
+            ))}
+            <CollapsibleSkillGroup
+              label="other skills"
+              skills={OTHER_SKILLS}
+              isOpen={openCategory === "other skills"}
+              onToggle={() => toggleCategory("other skills")}
+            />
+          </>
+        ) : (
+          <div className="skills-row-card">
+            <p className="skill-text-list skill-text-list--soft">
+              {SOFT_SKILLS.map((s, i) => (
+                <span key={s}>
+                  {s}
+                  {i < SOFT_SKILLS.length - 1 && (
+                    <span className="skill-text-dot">•</span>
+                  )}
+                </span>
+              ))}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-const EXPERIENCE_ENTRIES = [
-  {
-    role: "Web Developer Intern",
-    company: "Pasay Taft Tourist Dev Inc. (Urban Travellers Hotel)",
-    period: "February 2026 – May 2026 (300 hours)",
-    points: [
-      "Collaborated on system design for a fully deployed employee attendance and timekeeping system, from concept through deployment.",
-      "Built backend functionality in JavaScript and Node.js, integrating ZKTeco SDK/libraries for real-time communication with a biometric device serving ~70 employees.",
-      "Tested system performance and identified, tracked, and resolved all reported bugs, improving reliability and uptime.",
-      "Used AI-assisted tools (ChatGPT, Claude) to speed up coding and debugging.",
-    ],
-  },
-];
+const EXPERIENCE_DATA = {
+  internship: [
+    {
+      role: "Web Developer Intern",
+      company: "Pasay Taft Tourist Dev Inc. (Urban Travellers Hotel)",
+      period: "February 2026 – May 2026 (300 hours)",
+      points: [
+        "Collaborated on system design for a fully deployed employee attendance and timekeeping system, from concept through deployment.",
+        "Built backend functionality in JavaScript and Node.js, integrating ZKTeco SDK/libraries for real-time communication with a biometric device serving ~70 employees.",
+        "Tested system performance and identified, tracked, and resolved all reported bugs, improving reliability and uptime.",
+        "Used AI-assisted tools (ChatGPT, Claude) to speed up coding and debugging.",
+      ],
+    },
+  ],
+  work: [],
+};
 
-function ExperienceTab() {
+const EXPERIENCE_EMPTY_MESSAGE = {
+  internship: "no internship experience yet",
+  work: "no work experience yet",
+};
+
+function ExperienceTab({ onReadMore }) {
+  const [activeCategory, setActiveCategory] = useState("internship");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const entries = EXPERIENCE_DATA[activeCategory];
+  const entry = entries[currentIndex];
+
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setCurrentIndex(0);
+  };
+
+  const goPrev = () =>
+    setCurrentIndex((i) => (i === 0 ? entries.length - 1 : i - 1));
+  const goNext = () =>
+    setCurrentIndex((i) => (i === entries.length - 1 ? 0 : i + 1));
+
   return (
     <div className="profile-skills-row">
-      <span className="profile-skills-label">
-        WORK / INTERNSHIP EXPERIENCE . .'
-      </span>
-      <div className="profile-skills-group">
-        <span className="profile-skills-sublabel">internship</span>
-        {EXPERIENCE_ENTRIES.map((entry) => (
-          <div className="profile-intern" key={entry.role + entry.company}>
-            <div className="profile-intern-role">{entry.role}</div>
-            <div className="profile-intern-company">{entry.company}</div>
-            <div className="profile-intern-period">{entry.period}</div>
-            <ul className="profile-intern-points">
-              {entry.points.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </div>
+      <div className="service-tabs">
+        {Object.keys(EXPERIENCE_DATA).map((cat) => (
+          <button
+            key={cat}
+            className={`service-tab ${activeCategory === cat ? "active" : ""}`}
+            onClick={() => handleCategoryChange(cat)}
+          >
+            {cat}
+          </button>
         ))}
+      </div>
+      <div className="profile-skills-group skills-panel">
+        {entries.length === 0 ? (
+          <p className="experience-empty">
+            {EXPERIENCE_EMPTY_MESSAGE[activeCategory]}
+          </p>
+        ) : (
+          <div className="experience-pager">
+            {entries.length > 1 && (
+              <button className="experience-pager-arrow" onClick={goPrev}>
+                ‹
+              </button>
+            )}
+            <div className="experience-card">
+              <div className="profile-intern-role">{entry.role}</div>
+              <div className="profile-intern-company">{entry.company}</div>
+              <div className="profile-intern-period">{entry.period}</div>
+              <p className="experience-teaser">— {entry.points[0]}</p>
+              <button
+                className="experience-readmore"
+                onClick={() => onReadMore(entry)}
+              >
+                read more →
+              </button>
+            </div>
+            {entries.length > 1 && (
+              <button className="experience-pager-arrow" onClick={goNext}>
+                ›
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -815,6 +877,7 @@ const COVER_HEADINGS = {
 
 function ProfileCard({ onViewPortfolio }) {
   const [activeTab, setActiveTab] = useState("profile");
+  const [expandedEntry, setExpandedEntry] = useState(null);
   const hasCover =
     activeTab === "profile" ||
     activeTab === "skills" ||
@@ -828,7 +891,7 @@ function ProfileCard({ onViewPortfolio }) {
       case "skills":
         return <SkillsTab />;
       case "experience":
-        return <ExperienceTab />;
+        return <ExperienceTab onReadMore={setExpandedEntry} />;
       default:
         return <ProfileTab onViewPortfolio={onViewPortfolio} />;
     }
@@ -836,6 +899,44 @@ function ProfileCard({ onViewPortfolio }) {
 
   return (
     <div className="profile-bg">
+      {expandedEntry && (
+        <div
+          className="lightbox-overlay"
+          onClick={() => setExpandedEntry(null)}
+        >
+          <div
+            className="lightbox-card experience-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lightbox-card-bar">
+              <button
+                className="lightbox-close"
+                onClick={() => setExpandedEntry(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="experience-modal-body">
+              <div className="profile-intern-role">{expandedEntry.role}</div>
+              <div className="profile-intern-company">
+                {expandedEntry.company}
+              </div>
+              <div className="profile-intern-period">
+                {expandedEntry.period}
+              </div>
+              <ul className="profile-intern-points">
+                {expandedEntry.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+              <button className="experience-screenshots-btn" disabled>
+                screenshots
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="profile-card">
         <div className="browser-bar">
           <div className="browser-dots">
