@@ -529,7 +529,10 @@ function Portfolio({ onBack }) {
       {lightbox && (
         <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
           <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
-            <div className="lightbox-card-bar">
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> artwork preview
+              </span>
               <button
                 className="lightbox-close"
                 onClick={() => setLightbox(null)}
@@ -776,6 +779,66 @@ function SkillsTab() {
   );
 }
 
+const TK_SYSTEM_SCREENSHOTS = {
+  hr: {
+    label: "HR",
+    shots: [
+      { src: "/tk-system/hr_dashboard.png", label: "dashboard" },
+      { src: "/tk-system/hr_employees-profile.png", label: "employee profile" },
+      { src: "/tk-system/hr_emp-201.png", label: "employee 201 file" },
+      { src: "/tk-system/hr_emp-202.png", label: "employee 202 file" },
+      { src: "/tk-system/hr_201.png", label: "201 file" },
+      { src: "/tk-system/hr_timekeeping.png", label: "timekeeping" },
+      { src: "/tk-system/hr_view-schedule.png", label: "view schedule" },
+      { src: "/tk-system/hr_edit-schedule.png", label: "edit schedule" },
+      { src: "/tk-system/hr_swap-schedule.png", label: "swap schedule" },
+      { src: "/tk-system/hr_leave.png", label: "leave management" },
+      { src: "/tk-system/hr_summary-report.png", label: "summary report" },
+      { src: "/tk-system/hr_settings.png", label: "settings" },
+    ],
+  },
+  operations: {
+    label: "operations",
+    shots: [
+      { src: "/tk-system/login.png", label: "login" },
+      { src: "/tk-system/op_dashboard.png", label: "dashboard" },
+      { src: "/tk-system/op_employees.png", label: "employees" },
+      { src: "/tk-system/op_roster.png", label: "roster" },
+      {
+        src: "/tk-system/op_roster-shifts-schedules.png",
+        label: "roster shifts & schedules",
+      },
+      { src: "/tk-system/op_shift-presets.png", label: "shift presets" },
+      {
+        src: "/tk-system/op_shift-presets-shifts-schedules.png",
+        label: "shift presets & schedules",
+      },
+    ],
+  },
+  superadmin: {
+    label: "superadmin",
+    shots: [
+      { src: "/tk-system/superadmin_dashboard.png", label: "dashboard" },
+      { src: "/tk-system/superadmin_analytics.png", label: "analytics" },
+      { src: "/tk-system/superadmin_audit.png", label: "audit log" },
+      { src: "/tk-system/superadmin_settings.png", label: "settings" },
+    ],
+  },
+};
+
+const TK_SYSTEM_REPORTS = [
+  {
+    id: "qa-finding-schedule-swap",
+    label: "QA finding: schedule swap",
+    pdf: "qa-finding-schedule-swap.pdf",
+  },
+  {
+    id: "bug-report-hiring-date",
+    label: "Bug report: hiring date",
+    pdf: "bug-report-hiring-date.pdf",
+  },
+];
+
 const EXPERIENCE_DATA = {
   internship: [
     {
@@ -788,6 +851,12 @@ const EXPERIENCE_DATA = {
         "Tested system performance and identified, tracked, and resolved all reported bugs, improving reliability and uptime.",
         "Used AI-assisted tools (ChatGPT, Claude) to speed up coding and debugging.",
       ],
+      // Entries can optionally include `screenshots` (grouped image data,
+      // shown as a two-column gallery) and/or `demoLink` (shown as a
+      // "view live demo" button when there are no screenshots to show).
+      screenshots: TK_SYSTEM_SCREENSHOTS,
+      reports: TK_SYSTEM_REPORTS,
+      demoLink: null,
     },
   ],
   work: [],
@@ -863,6 +932,62 @@ function ExperienceTab({ onReadMore }) {
   );
 }
 
+function ScreenshotGallery({ screenshots, onPreview }) {
+  const roles = Object.keys(screenshots);
+  const [activeRole, setActiveRole] = useState(roles[0]);
+  const shots = screenshots[activeRole].shots;
+
+  return (
+    <div className="screenshot-gallery">
+      <div className="screenshot-gallery-label">★ system screenshots</div>
+      <div className="service-tabs">
+        {roles.map((role) => (
+          <button
+            key={role}
+            className={`service-tab ${activeRole === role ? "active" : ""}`}
+            onClick={() => setActiveRole(role)}
+          >
+            {screenshots[role].label}
+          </button>
+        ))}
+      </div>
+      <div className="screenshot-grid">
+        {shots.map((shot) => (
+          <button
+            key={shot.src}
+            className="screenshot-thumb"
+            onClick={() => onPreview(shot)}
+          >
+            <img src={shot.src} alt={shot.label} loading="lazy" />
+            <span className="screenshot-thumb-label">{shot.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QAReportsList({ reports, onPreview }) {
+  return (
+    <div className="qa-reports-list">
+      <div className="qa-reports-label">★ QA findings &amp; reports</div>
+      <div className="qa-reports-items">
+        {reports.map((item) => (
+          <button
+            key={item.id}
+            className="qa-report-row"
+            onClick={() => onPreview({ ...item, type: "report" })}
+          >
+            <span className="qa-report-row-icon">PDF</span>
+            <span className="qa-report-row-label">{item.label}</span>
+            <span className="qa-report-row-arrow">→</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const PROFILE_TABS = ["profile", "skills", "experience"];
 const PROFILE_TAB_URLS = {
   profile: "@kangkang/profile",
@@ -878,6 +1003,7 @@ const COVER_HEADINGS = {
 function ProfileCard({ onViewPortfolio }) {
   const [activeTab, setActiveTab] = useState("profile");
   const [expandedEntry, setExpandedEntry] = useState(null);
+  const [previewImg, setPreviewImg] = useState(null);
   const hasCover =
     activeTab === "profile" ||
     activeTab === "skills" ||
@@ -905,10 +1031,15 @@ function ProfileCard({ onViewPortfolio }) {
           onClick={() => setExpandedEntry(null)}
         >
           <div
-            className="lightbox-card experience-modal"
+            className={`lightbox-card experience-modal ${
+              expandedEntry.screenshots ? "experience-modal--wide" : ""
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="lightbox-card-bar">
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> experience details
+              </span>
               <button
                 className="lightbox-close"
                 onClick={() => setExpandedEntry(null)}
@@ -916,23 +1047,108 @@ function ProfileCard({ onViewPortfolio }) {
                 ✕
               </button>
             </div>
-            <div className="experience-modal-body">
-              <div className="profile-intern-role">{expandedEntry.role}</div>
-              <div className="profile-intern-company">
-                {expandedEntry.company}
+            <div
+              className={`experience-modal-body ${
+                expandedEntry.screenshots
+                  ? `experience-modal-body--split ${
+                      expandedEntry.reports && expandedEntry.reports.length > 0
+                        ? ""
+                        : "experience-modal-body--split-2"
+                    }`
+                  : ""
+              }`}
+            >
+              <div className="experience-modal-details">
+                <div className="profile-intern-role">{expandedEntry.role}</div>
+                <div className="profile-intern-company">
+                  {expandedEntry.company}
+                </div>
+                <div className="profile-intern-period">
+                  {expandedEntry.period}
+                </div>
+                <div className="experience-modal-divider" />
+                <ul className="profile-intern-points">
+                  {expandedEntry.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+                {!expandedEntry.screenshots && expandedEntry.demoLink && (
+                  <a
+                    href={expandedEntry.demoLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-gold experience-demo-btn"
+                  >
+                    ↗ view live demo
+                  </a>
+                )}
               </div>
-              <div className="profile-intern-period">
-                {expandedEntry.period}
-              </div>
-              <ul className="profile-intern-points">
-                {expandedEntry.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-              <button className="experience-screenshots-btn" disabled>
-                screenshots
+              {expandedEntry.screenshots && (
+                <div className="experience-modal-gallery-col">
+                  <ScreenshotGallery
+                    screenshots={expandedEntry.screenshots}
+                    onPreview={setPreviewImg}
+                  />
+                </div>
+              )}
+              {expandedEntry.reports && expandedEntry.reports.length > 0 && (
+                <div className="experience-modal-qa-col">
+                  <QAReportsList
+                    reports={expandedEntry.reports}
+                    onPreview={setPreviewImg}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewImg && (
+        <div
+          className="lightbox-overlay screenshot-preview-overlay"
+          onClick={() => setPreviewImg(null)}
+        >
+          <div
+            className={`lightbox-card ${
+              previewImg.type === "report" ? "report-preview-card" : ""
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> {previewImg.label}
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setPreviewImg(null)}
+              >
+                ✕
               </button>
             </div>
+            {previewImg.type === "report" ? (
+              <div className="report-pdf-wrap">
+                <embed
+                  src={previewImg.pdf}
+                  type="application/pdf"
+                  className="report-pdf-embed"
+                />
+                <a
+                  href={previewImg.pdf}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="report-pdf-fallback-link"
+                >
+                  having trouble viewing? open in a new tab ↗
+                </a>
+              </div>
+            ) : (
+              <img
+                src={previewImg.src}
+                alt={previewImg.label}
+                className="lightbox-img"
+              />
+            )}
           </div>
         </div>
       )}
@@ -945,6 +1161,11 @@ function ProfileCard({ onViewPortfolio }) {
             <span className="dot-green" />
           </div>
           <div className="browser-url">{PROFILE_TAB_URLS[activeTab]}</div>
+          {(activeTab === "skills" || activeTab === "experience") && (
+            <button className="back-btn" onClick={onViewPortfolio}>
+              portfolio →
+            </button>
+          )}
         </div>
 
         <div className="profile-card-body">
