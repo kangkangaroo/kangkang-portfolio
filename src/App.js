@@ -241,40 +241,65 @@ const SERVICE_DATA = {
   },
   "ui/ux designer": {
     quote: "If I can imagine it, Figma helps me build it!",
-    tool: "Figma",
+    tool: "Figma + Wix",
     toolIcon: "🔷",
     projects: [
       {
         title: "portfolio",
         sub: "ui/ux design · figma prototype",
+        description:
+          "A short description of the portfolio project goes here — what it's about, the problem it solves, and what role I played in designing it.",
         img: "/f1.png",
         link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=360-35&t=QppVUxLHnlqnkizB-1",
+        screenshots: [
+          "/portfolio-figma/1.png",
+          "/portfolio-figma/2.png",
+          "/portfolio-figma/3.png",
+          "/portfolio-figma/4.png",
+          "/portfolio-figma/5.png",
+          "/portfolio-figma/6.png",
+        ],
       },
       {
         title: "profile card",
         sub: "ui/ux design · figma prototype",
+        description:
+          "A short description of the profile card project goes here — what it's about, the problem it solves, and what role I played in designing it.",
         img: "/f2.png",
         link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=454-28&t=QppVUxLHnlqnkizB-1",
+        screenshots: ["/profile_card-figma/1.png"],
       },
-      /* {title: 'expenses tracker', sub: 'ui/ux design', img: '/f3.png', link: 'https://www.figma.com/proto/bZ7kVBbwCpK7ZJa0KQ5k7m/Projects?node-id=1-2&t=vGvNRepkjiIVr6jy-1' }, */
+      {
+        title: "gvc-portfolio",
+        sub: "academic project · wix",
+        description:
+          "A short description of the gvc-portfolio project goes here — what it's about, the problem it solves, and what role I played in designing it.",
+        img: "/s2.png",
+        link: "https://belamora04.wixsite.com/ibmora0",
+      },
     ],
   },
   "web developer": {
     quote: "Turning designs into real websites, one line of code at a time!",
-    tool: "VS Code + Wix",
+    tool: "VS Code",
     toolIcon: "💻",
     projects: [
       {
         title: "kangkang-portfolio",
         sub: "personal portfolio · react.js · vercel",
+        description:
+          "My personal portfolio site, designed in Figma and built with React — focused on a dark, anime-inspired browser-frame aesthetic with smooth tab navigation and interactive galleries.",
         img: "/s1.png",
         link: "kangkang-portfolio.vercel.app",
-      },
-      {
-        title: "gvc-portfolio",
-        sub: "academic project · wix",
-        img: "/s2.png",
-        link: "https://belamora04.wixsite.com/ibmora0",
+        tools: [
+          "React.js",
+          "JavaScript",
+          "HTML",
+          "CSS",
+          "Vercel",
+          "GitHub",
+          "VS Code",
+        ],
       },
     ],
   },
@@ -295,9 +320,9 @@ function HomeSection() {
           kangkang's here
         </h1>
         <p className="hero-desc">
-          "mabuhay! you can call me kangkang — a digital artist and web designer
-          with budding skills and a growing portfolio. i'm eager to learn and
-          take on new challenges! ⸜(｡˃ ᵕ ˂ )⸝♡"
+          "mabuhay! you can call me kangkang — a digital artist and web
+          developer with budding skills and a growing portfolio. i'm eager to
+          learn and take on new challenges! ⸜(｡˃ ᵕ ˂ )⸝♡"
         </p>
         <a
           href="/Issabela_Mora_Resume.pdf"
@@ -314,44 +339,66 @@ function HomeSection() {
 function AboutSection() {
   return (
     <div className="section-content">
-      <div className="about-cover-strip" />
-      <p className="about-tagline">
-        " digital artist · web designer · anime-inspired visuals "
+      <div
+        className="services-hero"
+        style={{
+          backgroundImage: "url(/frame1.png)",
+          backgroundSize: "120%",
+          backgroundPosition: "90% center",
+        }}
+      >
+        <div className="services-hero-placeholder"></div>
+        <div className="services-hero-text">
+          <h2 className="section-title" style={{ marginBottom: 0 }}>
+            <span className="star-prefix">★—</span> welcome!
+            <br />a little about me
+          </h2>
+        </div>
+      </div>
+      <p className="service-quote">
+        "A digital artist & web developer, having fun doing both"
       </p>
-      <div className="about-block">
-        <div className="about-block-title">short intro</div>
-        <ul className="about-list">
-          <li>pronouns: she/her</li>
-          <li>nationality: Filipino 🇵🇭</li>
-          <li>
-            personality: introverted, and detail-oriented — I enjoy calm, and
-            focused creative work
-          </li>
-        </ul>
+      <div className="about-columns">
+        <div className="about-block">
+          <div className="about-block-title">short intro</div>
+          <ul className="about-list">
+            <li>pronouns: she/her</li>
+            <li>nationality: Filipino 🇵🇭</li>
+            <li>
+              personality: introverted, detail-oriented — suited for focused
+              design and patient debugging
+            </li>
+          </ul>
+        </div>
+        <div className="about-block">
+          <div className="about-block-title">what I do</div>
+          <ul className="about-list">
+            <li>character illustration</li>
+            <li>UI/UX web design</li>
+            <li>front-end web development</li>
+            <li>software QA testing & bug tracking</li>
+          </ul>
+        </div>
       </div>
+      <div className="experience-modal-divider" />
       <div className="about-block">
-        <div className="about-block-title">what I do</div>
-        <ul className="about-list">
-          <li>character illustration</li>
-          <li>UI/UX web design</li>
-          <li>front-end web development</li>
-        </ul>
-      </div>
-      <div className="about-block">
-        <div className="about-block-title">currently</div>
-        <ul className="about-list">
-          <li>building & deploying my portfolio with React & Vercel</li>
-          <li>learning and improving every day</li>
-          {/* <li>open for commissions & collaborations</li> */}
-        </ul>
+        <div className="about-block-title">why I do this</div>
+        <p className="about-paragraph">
+          Coding never came easy to me, but somewhere in the struggle I found
+          what I actually love — designing how things should feel, and chasing
+          down what's broken until it isn't. Turns out QA is my favorite part.
+        </p>
       </div>
     </div>
   );
 }
 
-function ServicesSection({ onPreview }) {
+function ServicesSection({ onPreview, onOpenGallery }) {
   const [activeService, setActiveService] = useState("digital artist");
   const svcData = SERVICE_DATA[activeService];
+  const isUiUx = activeService === "ui/ux designer";
+  const isWebDev = activeService === "web developer";
+  const showsGalleryModal = isUiUx || isWebDev;
 
   return (
     <div className="section-content">
@@ -404,7 +451,12 @@ function ServicesSection({ onPreview }) {
       ) : (
         <div className="service-scroll">
           {svcData.projects.map((p, i) => (
-            <div key={i} className="service-scroll-card">
+            <div
+              key={i}
+              className="service-scroll-card"
+              onClick={showsGalleryModal ? () => onOpenGallery(p) : undefined}
+              style={showsGalleryModal ? { cursor: "pointer" } : undefined}
+            >
               {p.img && (
                 <div className="service-project-cover">
                   <img src={p.img} alt={p.title} />
@@ -415,7 +467,9 @@ function ServicesSection({ onPreview }) {
               )}
               <div className="service-project-info">
                 <h4>
-                  {p.link ? (
+                  {showsGalleryModal ? (
+                    p.title
+                  ) : p.link ? (
                     <a
                       href={p.link}
                       target="_blank"
@@ -435,9 +489,20 @@ function ServicesSection({ onPreview }) {
         </div>
       )}
 
-      <div className="tool-badge">
-        <span>{svcData.toolIcon}</span>
-        <span>{svcData.tool}</span>
+      <div className="tool-badge-row">
+        <div className="tool-badge">
+          <span>{svcData.toolIcon}</span>
+          <span>{svcData.tool}</span>
+        </div>
+        {activeService === "digital artist" && (
+          <button
+            className="btn-gold btn-gold--disabled"
+            disabled
+            title="Gallery link coming soon"
+          >
+            view gallery
+          </button>
+        )}
       </div>
     </div>
   );
@@ -507,6 +572,7 @@ const TAB_URLS = {
 function Portfolio({ onBack }) {
   const [activeTab, setActiveTab] = useState("home");
   const [lightbox, setLightbox] = useState(null);
+  const [galleryModal, setGalleryModal] = useState(null);
 
   const renderSection = () => {
     switch (activeTab) {
@@ -515,7 +581,12 @@ function Portfolio({ onBack }) {
       case "about me":
         return <AboutSection />;
       case "services":
-        return <ServicesSection onPreview={setLightbox} />;
+        return (
+          <ServicesSection
+            onPreview={setLightbox}
+            onOpenGallery={setGalleryModal}
+          />
+        );
       case "get in touch":
         return <ContactSection />;
       default:
@@ -525,6 +596,106 @@ function Portfolio({ onBack }) {
 
   return (
     <>
+      {/* Gallery modal — also outside the browser frame, no clipping */}
+      {galleryModal && (
+        <div className="lightbox-overlay" onClick={() => setGalleryModal(null)}>
+          <div
+            className="lightbox-card experience-modal experience-modal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> {galleryModal.title}
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setGalleryModal(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="experience-modal-body experience-modal-body--split experience-modal-body--split-2">
+              <div className="experience-modal-details">
+                <div className="profile-intern-role">{galleryModal.title}</div>
+                <div className="profile-intern-company">{galleryModal.sub}</div>
+                <div className="experience-modal-divider" />
+                <p
+                  className="about-paragraph"
+                  style={{ marginTop: "10px", marginBottom: "16px" }}
+                >
+                  {galleryModal.description ||
+                    "A short description of this project goes here — what it's about, the problem it solves, and what role I played in designing it."}
+                </p>
+                {galleryModal.tools && galleryModal.tools.length > 0 && (
+                  <>
+                    <div className="about-block-title">
+                      tools &amp; software used
+                    </div>
+                    <p
+                      className="skill-text-list skill-text-list--primary"
+                      style={{ marginBottom: "16px" }}
+                    >
+                      {galleryModal.tools.map((t, i) => (
+                        <span key={t}>
+                          {t}
+                          {i < galleryModal.tools.length - 1 && (
+                            <span className="skill-text-dot">•</span>
+                          )}
+                        </span>
+                      ))}
+                    </p>
+                  </>
+                )}
+                {galleryModal.link && (
+                  <a
+                    href={galleryModal.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-gold experience-demo-btn"
+                  >
+                    ↗ view live{" "}
+                    {galleryModal.link.includes("figma") ? "prototype" : "site"}
+                  </a>
+                )}
+              </div>
+              <div className="experience-modal-gallery-col">
+                <div className="screenshot-gallery">
+                  <div className="screenshot-gallery-label">★ screenshots</div>
+                  {galleryModal.screenshots &&
+                  galleryModal.screenshots.length > 0 ? (
+                    <div className="screenshot-grid">
+                      {galleryModal.screenshots.map((src, i) => (
+                        <button
+                          key={src}
+                          className="screenshot-thumb"
+                          onClick={() => setLightbox(src)}
+                        >
+                          <img
+                            src={src}
+                            alt={`${galleryModal.title} screenshot ${i + 1}`}
+                            loading="lazy"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    galleryModal.img && (
+                      <button
+                        className="screenshot-thumb"
+                        style={{ width: "100%", aspectRatio: "16 / 10" }}
+                        onClick={() => setLightbox(galleryModal.img)}
+                      >
+                        <img src={galleryModal.img} alt={galleryModal.title} />
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Lightbox is NOW outside the browser frame — no clipping! */}
       {lightbox && (
         <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
@@ -599,7 +770,7 @@ function ProfileTab({ onViewPortfolio }) {
         <div className="profile-header-text">
           <h1 className="profile-name">KANGKANG</h1>
           <p className="profile-title">
-            Digital Artist &nbsp;|&nbsp; Web Designer
+            Digital Artist &nbsp;|&nbsp; Web Developer
           </p>
           <div className="profile-contacts">
             <div className="profile-contact-item">
@@ -629,15 +800,16 @@ function ProfileTab({ onViewPortfolio }) {
       </div>
       <div className="profile-about-box">
         <p>
-          "Hey there! I go by Kangkang — an aspiring digital artist and web
-          designer. I may not be a professional yet, but I pour my heart into
-          every artwork, layout, and concept I bring to life. For me, every
-          project is a chance to blend creativity with functionality and make
-          something truly unique." ∧_∧
+          Hi, you can call me Kangkang — a CS grad who somehow ended up as an
+          artist, a developer, and a QA tester who genuinely enjoys finding
+          bugs. I recently wrapped up an internship building a real attendance
+          system used by ~70 employees, and I like projects where design and
+          function actually have to work together. Always learning something new
+          along the way. ∧_∧
         </p>
       </div>
       <button className="profile-portfolio-btn" onClick={onViewPortfolio}>
-        ┌ ✦ View My Portfolio ✦ ┐
+        ✦ View My Portfolio ✦
       </button>
     </>
   );
