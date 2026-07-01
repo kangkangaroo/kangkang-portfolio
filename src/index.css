@@ -608,16 +608,13 @@ body {
   }
 
   .services-hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
     background: linear-gradient(
-      to bottom,
-      rgba(20, 20, 22, 0.95) 55%,
+      to right,
+      rgba(20, 20, 22, 0.92) 40%,
       rgba(20, 20, 22, 0.1) 100%
     );
-    z-index: 1;
   }
+}
 
   .services-hero-placeholder {
     z-index: 0;
