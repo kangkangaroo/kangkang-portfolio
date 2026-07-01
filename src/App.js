@@ -335,7 +335,7 @@ function AboutSection() {
         className="services-hero"
         style={{
           backgroundImage: "url(/frame1.png)",
-          backgroundSize: "120%",
+          backgroundSize: "140%",
           backgroundPosition: "90% center",
         }}
       >
@@ -401,7 +401,7 @@ function ServicesSection({ onPreview, onOpenGallery }) {
         className="services-hero"
         style={{
           backgroundImage: "url(/frame1.png)",
-          backgroundSize: "120%",
+          backgroundSize: "140%",
           backgroundPosition: "90% center",
         }}
       >
@@ -433,7 +433,12 @@ function ServicesSection({ onPreview, onOpenGallery }) {
             <div
               key={i}
               className="artwork-item"
-              onClick={() => onPreview(`/${i + 1}.png`)}
+              onClick={() =>
+                onPreview(
+                  svcData.projects.map((_, idx) => `/${idx + 1}.png`),
+                  i,
+                )
+              }
             >
               <img
                 src={`/${i + 1}.png`}
@@ -510,7 +515,7 @@ function ContactSection() {
         className="services-hero"
         style={{
           backgroundImage: "url(/frame1.png)",
-          backgroundSize: "120%",
+          backgroundSize: "140%",
           backgroundPosition: "90% center",
         }}
       >
@@ -584,6 +589,17 @@ function Portfolio({ onBack }) {
   const [activeTab, setActiveTab] = useState("home");
   const [lightbox, setLightbox] = useState(null);
   const [galleryModal, setGalleryModal] = useState(null);
+  const openLightbox = (items, index) => setLightbox({ items, index });
+  const goPrevImg = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === 0 ? p.items.length - 1 : p.index - 1,
+    }));
+  const goNextImg = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === p.items.length - 1 ? 0 : p.index + 1,
+    }));
 
   const renderSection = () => {
     switch (activeTab) {
@@ -594,7 +610,7 @@ function Portfolio({ onBack }) {
       case "services":
         return (
           <ServicesSection
-            onPreview={setLightbox}
+            onPreview={openLightbox}
             onOpenGallery={setGalleryModal}
           />
         );
@@ -679,7 +695,9 @@ function Portfolio({ onBack }) {
                         <button
                           key={src}
                           className="screenshot-thumb"
-                          onClick={() => setLightbox(src)}
+                          onClick={() =>
+                            openLightbox(galleryModal.screenshots, i)
+                          }
                         >
                           <img
                             src={src}
@@ -694,7 +712,7 @@ function Portfolio({ onBack }) {
                       <button
                         className="screenshot-thumb"
                         style={{ width: "100%", aspectRatio: "16 / 10" }}
-                        onClick={() => setLightbox(galleryModal.img)}
+                        onClick={() => openLightbox([galleryModal.img], 0)}
                       >
                         <img src={galleryModal.img} alt={galleryModal.title} />
                       </button>
@@ -722,7 +740,36 @@ function Portfolio({ onBack }) {
                 ✕
               </button>
             </div>
-            <img src={lightbox} alt="preview" className="lightbox-img" />
+            <div className="lightbox-img-wrap">
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                  onClick={goPrevImg}
+                >
+                  ‹
+                </button>
+              )}
+              <div className="lightbox-frame">
+                <img
+                  src={lightbox.items[lightbox.index]}
+                  alt="preview"
+                  className="lightbox-img"
+                />
+              </div>
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                  onClick={goNextImg}
+                >
+                  ›
+                </button>
+              )}
+              {lightbox.items.length > 1 && (
+                <div className="lightbox-counter">
+                  {lightbox.index + 1} / {lightbox.items.length}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1139,7 +1186,13 @@ function ScreenshotGallery({ screenshots, onPreview }) {
           <button
             key={shot.src}
             className="screenshot-thumb"
-            onClick={() => onPreview(shot)}
+            onClick={() =>
+              onPreview({
+                type: "image",
+                items: shots,
+                index: shots.indexOf(shot),
+              })
+            }
           >
             <img src={shot.src} alt={shot.label} loading="lazy" />
             <span className="screenshot-thumb-label">{shot.label}</span>
@@ -1300,7 +1353,10 @@ function ProfileCard({ onViewPortfolio }) {
           >
             <div className="lightbox-card-bar modal-bar-titled">
               <span className="modal-bar-title">
-                <span className="star-prefix">★</span> {previewImg.label}
+                <span className="star-prefix">★</span>{" "}
+                {previewImg.type === "report"
+                  ? previewImg.label
+                  : previewImg.items[previewImg.index].label}
               </span>
               <button
                 className="lightbox-close"
@@ -1326,11 +1382,46 @@ function ProfileCard({ onViewPortfolio }) {
                 </a>
               </div>
             ) : (
-              <img
-                src={previewImg.src}
-                alt={previewImg.label}
-                className="lightbox-img"
-              />
+              <div className="lightbox-img-wrap">
+                {previewImg.items.length > 1 && (
+                  <button
+                    className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                    onClick={() =>
+                      setPreviewImg((p) => ({
+                        ...p,
+                        index: p.index === 0 ? p.items.length - 1 : p.index - 1,
+                      }))
+                    }
+                  >
+                    ‹
+                  </button>
+                )}
+                <div className="lightbox-frame">
+                  <img
+                    src={previewImg.items[previewImg.index].src}
+                    alt={previewImg.items[previewImg.index].label}
+                    className="lightbox-img"
+                  />
+                </div>
+                {previewImg.items.length > 1 && (
+                  <button
+                    className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                    onClick={() =>
+                      setPreviewImg((p) => ({
+                        ...p,
+                        index: p.index === p.items.length - 1 ? 0 : p.index + 1,
+                      }))
+                    }
+                  >
+                    ›
+                  </button>
+                )}
+                {previewImg.items.length > 1 && (
+                  <div className="lightbox-counter">
+                    {previewImg.index + 1} / {previewImg.items.length}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
