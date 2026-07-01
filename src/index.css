@@ -313,6 +313,10 @@ body {
   border-radius: 6px;
   overflow: hidden;
   background: linear-gradient(135deg, #1a1a1c 60%, #252528 100%);
+  background-image: url("../public/frame1.png");
+  background-size: 140%;
+  background-position: 90% center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: flex-end;
 }
@@ -584,6 +588,11 @@ body {
 }
 
 @media (max-width: 480px) {
+  .services-hero {
+    background-size: 240%;
+    background-position: center 15%;
+  }
+
   .page {
     padding: 24px 12px 60px;
     gap: 60px;
@@ -1725,14 +1734,11 @@ body {
 }
 
 @media (max-width: 480px) {
-  .services-hero {
-    background-size: 200%;
-    background-position: center top;
-  }
 
   .profile-bg {
     padding: 16px;
-    align-items: flex-start;
+    align-items: center;
+    overflow-y: auto;
   }
 
   .profile-card {
@@ -1747,6 +1753,8 @@ body {
   .profile-cover {
     width: calc(100% + 32px);
     margin: 0 -16px 16px;
+    background-size: 220%;
+    background-position: 70% top;
   }
 
   .profile-name {

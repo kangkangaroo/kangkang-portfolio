@@ -331,14 +331,7 @@ function HomeSection() {
 function AboutSection() {
   return (
     <div className="section-content">
-      <div
-        className="services-hero"
-        style={{
-          backgroundImage: "url(/frame1.png)",
-          backgroundSize: "140%",
-          backgroundPosition: "90% center",
-        }}
-      >
+<div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -397,14 +390,7 @@ function ServicesSection({ onPreview, onOpenGallery }) {
 
   return (
     <div className="section-content">
-      <div
-        className="services-hero"
-        style={{
-          backgroundImage: "url(/frame1.png)",
-          backgroundSize: "140%",
-          backgroundPosition: "90% center",
-        }}
-      >
+<div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -511,14 +497,7 @@ function ServicesSection({ onPreview, onOpenGallery }) {
 function ContactSection() {
   return (
     <div className="section-content">
-      <div
-        className="services-hero"
-        style={{
-          backgroundImage: "url(/frame1.png)",
-          backgroundSize: "140%",
-          backgroundPosition: "90% center",
-        }}
-      >
+<div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
