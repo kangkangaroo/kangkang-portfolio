@@ -1725,6 +1725,11 @@ body {
 }
 
 @media (max-width: 480px) {
+  .services-hero {
+    background-size: 200%;
+    background-position: center top;
+  }
+
   .profile-bg {
     padding: 16px;
     align-items: flex-start;
