@@ -589,8 +589,8 @@ body {
 
 @media (max-width: 480px) {
   .services-hero {
-    background-size: 140%;
-    background-position: center 15%;
+    background-size: 160%;
+    background-position: center 10%;
   }
 
   .page {
@@ -600,7 +600,7 @@ body {
 
   .hero-bg {
     background-position: center 25%;
-    background-size: 140%;
+    background-size: 240%;
     min-height: 340px;
     padding: 24px !important;
   }
