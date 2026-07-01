@@ -604,7 +604,7 @@ body {
 @media (max-width: 480px) {
   .services-hero {
     background-size: 160%;
-    background-position: right 5%;
+    background-position: right 10%;
   }
 
   .services-hero::before {
