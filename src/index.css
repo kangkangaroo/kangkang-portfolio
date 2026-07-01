@@ -605,7 +605,6 @@ body {
   .services-hero {
     background-size: 160%;
     background-position: right 10%;
-    background: linear-gradient(135deg, #1a1a1c 60%, #252528 100%);
   }
 
   .services-hero::before {
@@ -630,8 +629,8 @@ body {
   }
 
   .hero-bg {
-    background-position: right 15%;
-    background-size: 200%;
+    background-size: cover;
+    background-position: center 30%;
     max-height: 100%;
   }
 
