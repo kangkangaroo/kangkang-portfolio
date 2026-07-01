@@ -248,7 +248,7 @@ const SERVICE_DATA = {
         title: "portfolio",
         sub: "ui/ux design · figma prototype",
         description:
-          "A short description of the portfolio project goes here — what it's about, the problem it solves, and what role I played in designing it.",
+          "A personal portfolio concept designed and prototyped in Figma — mockups and clickable navigation flows built out before development began.",
         img: "/f1.png",
         link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=360-35&t=QppVUxLHnlqnkizB-1",
         screenshots: [
@@ -264,7 +264,7 @@ const SERVICE_DATA = {
         title: "profile card",
         sub: "ui/ux design · figma prototype",
         description:
-          "A short description of the profile card project goes here — what it's about, the problem it solves, and what role I played in designing it.",
+          "A Figma prototype for my portfolio's landing screen — combining my avatar, contact details, and a short bio into a single, focused first impression.",
         img: "/f2.png",
         link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=454-28&t=QppVUxLHnlqnkizB-1",
         screenshots: ["/profile_card-figma/1.png"],
@@ -273,7 +273,7 @@ const SERVICE_DATA = {
         title: "gvc-portfolio",
         sub: "academic project · wix",
         description:
-          "A short description of the gvc-portfolio project goes here — what it's about, the problem it solves, and what role I played in designing it.",
+          "An academic project for my GVC subject, built as a blog-format site in Wix to compile and document all our class activities in one place.",
         img: "/s2.png",
         link: "https://belamora04.wixsite.com/ibmora0",
       },
@@ -288,18 +288,10 @@ const SERVICE_DATA = {
         title: "kangkang-portfolio",
         sub: "personal portfolio · react.js · vercel",
         description:
-          "My personal portfolio site, designed in Figma and built with React — focused on a dark, anime-inspired browser-frame aesthetic with smooth tab navigation and interactive galleries.",
-        img: "/s1.png",
+          "My personal portfolio — a Figma mockup brought to life with React.js and CSS, deployed on Vercel. I extended the original design during development, building out the browser-frame UI and tabbed navigation myself, then refined things further until the whole site matched my own aesthetic — a star-motif, cozy-dark theme built around a mascot character I created.",
+        img: "/kangkang-portfolio/1.png",
         link: "kangkang-portfolio.vercel.app",
-        tools: [
-          "React.js",
-          "JavaScript",
-          "HTML",
-          "CSS",
-          "Vercel",
-          "GitHub",
-          "VS Code",
-        ],
+        tools: ["React", "CSS", "Vercel", "GitHub", "VS Code"],
       },
     ],
   },
@@ -358,36 +350,39 @@ function AboutSection() {
       <p className="service-quote">
         "A digital artist & web developer, having fun doing both"
       </p>
-      <div className="about-columns">
-        <div className="about-block">
-          <div className="about-block-title">short intro</div>
-          <ul className="about-list">
-            <li>pronouns: she/her</li>
-            <li>nationality: Filipino 🇵🇭</li>
-            <li>
-              personality: introverted, detail-oriented — suited for focused
-              design and patient debugging
-            </li>
-          </ul>
+
+      <div className="about-details-card">
+        <div className="about-columns">
+          <div className="about-block">
+            <div className="about-block-title">short intro</div>
+            <ul className="about-list">
+              <li>pronouns: she/her</li>
+              <li>nationality: Filipino 🇵🇭</li>
+              <li>
+                personality: introverted, detail-oriented — suited for focused
+                design and patient debugging
+              </li>
+            </ul>
+          </div>
+          <div className="about-block">
+            <div className="about-block-title">what I do</div>
+            <ul className="about-list">
+              <li>character illustration</li>
+              <li>UI/UX web design</li>
+              <li>front-end web development</li>
+              <li>software QA testing & bug tracking</li>
+            </ul>
+          </div>
         </div>
+        <div className="divider-line" />
         <div className="about-block">
-          <div className="about-block-title">what I do</div>
-          <ul className="about-list">
-            <li>character illustration</li>
-            <li>UI/UX web design</li>
-            <li>front-end web development</li>
-            <li>software QA testing & bug tracking</li>
-          </ul>
+          <div className="about-block-title">why I do this</div>
+          <p className="about-paragraph">
+            Coding never came easy to me, but somewhere in the struggle I found
+            what I actually love — designing how things should feel, and chasing
+            down what's broken until it isn't. Turns out QA is my favorite part.
+          </p>
         </div>
-      </div>
-      <div className="experience-modal-divider" />
-      <div className="about-block">
-        <div className="about-block-title">why I do this</div>
-        <p className="about-paragraph">
-          Coding never came easy to me, but somewhere in the struggle I found
-          what I actually love — designing how things should feel, and chasing
-          down what's broken until it isn't. Turns out QA is my favorite part.
-        </p>
       </div>
     </div>
   );
@@ -511,14 +506,28 @@ function ServicesSection({ onPreview, onOpenGallery }) {
 function ContactSection() {
   return (
     <div className="section-content">
-      <h2 className="section-title">
-        <span className="star-prefix">★—</span> get in touch with me!
-      </h2>
-      <p className="contact-intro">
-        looking for a way to contact me? I've got you!
+      <div
+        className="services-hero"
+        style={{
+          backgroundImage: "url(/frame1.png)",
+          backgroundSize: "120%",
+          backgroundPosition: "90% center",
+        }}
+      >
+        <div className="services-hero-placeholder"></div>
+        <div className="services-hero-text">
+          <h2 className="section-title" style={{ marginBottom: 0 }}>
+            <span className="star-prefix">★—</span> welcome!
+            <br />
+            let's talk!
+          </h2>
+        </div>
+      </div>
+      <p className="service-quote">
+        "Looking for a way to contact me? I've got you!"
       </p>
       <div className="contact-group">
-        <div className="contact-group-title">my work account</div>
+        <div className="contact-group-title">ways to reach me</div>
         <div className="profile-contact-item contact-item">
           <span className="profile-contact-icon contact-icon">✉</span>
           <span>
@@ -529,24 +538,26 @@ function ContactSection() {
             <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
           </span>
         </div>
-        <a
-          href="https://www.facebook.com/profile.php?id=61590355995156"
-          target="_blank"
-          rel="noreferrer"
-          className="contact-item"
-        >
-          <span className="contact-icon">f</span>
-          <span>Issabela Mora</span>
-        </a>
-        <a
-          href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ=="
-          target="_blank"
-          rel="noreferrer"
-          className="contact-item"
-        >
-          <span className="contact-icon">@</span>
-          <span>kangkangarooo</span>
-        </a>
+        <div className="profile-contact-item contact-item">
+          <span className="profile-contact-icon contact-icon">f</span>
+          <span>
+            <a href="https://www.facebook.com/profile.php?id=61591034440884">
+              kang kang
+            </a>
+            {" / "}
+            <a href="https://www.facebook.com/profile.php?id=61590355995156">
+              issabela mora
+            </a>
+          </span>
+        </div>
+        <div className="profile-contact-item contact-item">
+          <span className="profile-contact-icon contact-icon">@</span>
+          <span>
+            <a href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ==">
+              kangkangarooo
+            </a>
+          </span>
+        </div>
       </div>
       <a
         href="/Issabela_Mora_Resume.pdf"
@@ -867,7 +878,7 @@ const SOFT_SKILLS = [
 
 function CollapsibleSkillGroup({ label, skills, isOpen, onToggle }) {
   return (
-    <div className="skills-row-card">
+    <div className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}>
       <button className="skills-toggle" onClick={onToggle}>
         <span className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}>▸</span>
         {label}

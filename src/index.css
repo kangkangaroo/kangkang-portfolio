@@ -361,6 +361,18 @@ body {
   flex-shrink: 0;
 }
 
+.about-details-card {
+  border: 1px dashed var(--frame-border);
+  border-radius: 6px;
+  padding: 18px 16px 14px;
+}
+
+.divider-line {
+  height: 1px;
+  background: var(--frame-border);
+  margin: 16px 0;
+}
+
 /* ─── SERVICES ─────────────────────────────────── */
 .services-hero {
   position: relative;
@@ -628,12 +640,12 @@ body {
   font-size: 11.5px;
   color: var(--muted);
   margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  padding-left: 14px;
+  border-left: 1px dashed var(--frame-border);
 }
+
 .contact-intro::before {
-  content: "★—";
+  content: none;
   color: var(--gold);
   font-size: 10px;
   flex-shrink: 0;
@@ -641,11 +653,16 @@ body {
 
 .contact-group {
   margin-bottom: 22px;
+  border: 1px dashed var(--frame-border);
+  border-radius: 6px;
+  padding: 18px 16px 14px;
+/*   background: #1a1a1c; */
 }
 
 .contact-group-title {
-  font-size: 10.5px;
-  color: var(--gold);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: white;
   font-weight: 600;
   margin-bottom: 10px;
   display: flex;
@@ -654,7 +671,7 @@ body {
 }
 
 .contact-group-title::before {
-  content: "★—";
+  content: none;
   font-size: 9px;
 }
 
@@ -1600,7 +1617,6 @@ body {
 
 .skill-text-list--primary {
   color: var(--text);
-  font-weight: 600;
   padding-left: 14px;
   border-left: 1px dashed var(--frame-border);
   margin-left: 2px;
@@ -1641,6 +1657,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  border: 1px dashed var(--frame-border);
+  border-radius: 6px;
+  padding: 14px 16px;
 }
 
 .skills-row-card {
@@ -1712,6 +1731,11 @@ body {
 .skill-icon-badge span {
   font-size: 16px;
   line-height: 1;
+}
+
+.skills-row-card--open {
+  background: #1e1e20;
+  border-left-color: var(--gold-light);
 }
 
 .profile-skill-tag {
