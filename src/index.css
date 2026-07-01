@@ -589,7 +589,7 @@ body {
 
 @media (max-width: 480px) {
   .services-hero {
-    background-size: 240%;
+    background-size: 140%;
     background-position: center 15%;
   }
 
@@ -600,7 +600,7 @@ body {
 
   .hero-bg {
     background-position: center 25%;
-    background-size: 280%;
+    background-size: 140%;
     min-height: 340px;
     padding: 24px !important;
   }
@@ -1753,7 +1753,7 @@ body {
   .profile-cover {
     width: calc(100% + 32px);
     margin: 0 -16px 16px;
-    background-size: 220%;
+    background-size: 140%;
     background-position: 70% top;
   }
 
