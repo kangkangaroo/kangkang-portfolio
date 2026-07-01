@@ -590,7 +590,7 @@ body {
 @media (max-width: 480px) {
   .services-hero {
     background-size: 160%;
-    background-position: center;
+    background-position: left 10%;
   }
 
   .page {
@@ -599,7 +599,7 @@ body {
   }
 
   .hero-bg {
-    background-position: center;
+    background-position: left 10%;
     background-size: 240%;
    /*  min-height: 340px; */
     /* padding: 24px !important; */
