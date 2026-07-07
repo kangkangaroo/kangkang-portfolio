@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import { supabase } from "./supabaseClient";
 
@@ -1474,20 +1475,146 @@ function ProfileCard({ onViewPortfolio }) {
   );
 }
 
-// ── Root ──────────────────────────────────────────────────────────────────────
-export default function App() {
-  const [view, setView] = useState("profile"); // 'profile' | 'portfolio'
+// ── Admin (login) ─────────────────────────────────────────────────────────────
+function AdminPage() {
+  const [session, setSession] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // check if already logged in (session survives refreshes)
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    // listen for login/logout changes
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => setSession(newSession),
+    );
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) setAuthError(error.message);
+    setLoading(false);
+  };
+
+  const handleLogout = () => supabase.auth.signOut();
 
   return (
-    <>
+    <div className="profile-bg">
+      <div className="profile-card" style={{ maxWidth: "400px" }}>
+        <div className="browser-bar">
+          <div className="browser-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
+          </div>
+          <div className="browser-url">@kangkang/admin</div>
+        </div>
+        <div className="profile-card-body" style={{ padding: "24px 28px" }}>
+          {session ? (
+            <>
+              <div className="profile-about-label">
+                <span>ADMIN</span>
+              </div>
+              <p className="experience-teaser">
+                logged in as {session.user.email} ✦
+              </p>
+              <p className="experience-teaser">
+                (edit tools coming in stage 4!)
+              </p>
+              <button className="profile-portfolio-btn" onClick={handleLogout}>
+                log out
+              </button>
+            </>
+          ) : (
+            <form onSubmit={handleLogin}>
+              <div className="profile-about-label">
+                <span>ADMIN LOGIN</span>
+              </div>
+              <input
+                type="email"
+                placeholder="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="browser-url"
+                style={{
+                  width: "100%",
+                  marginBottom: "10px",
+                  padding: "8px 10px",
+                  textAlign: "left",
+                  border: "1px solid var(--frame-border)",
+                  color: "var(--text)",
+                  fontFamily: "Inter, sans-serif",
+                }}
+              />
+              <input
+                type="password"
+                placeholder="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="browser-url"
+                style={{
+                  width: "100%",
+                  marginBottom: "14px",
+                  padding: "8px 10px",
+                  textAlign: "left",
+                  border: "1px solid var(--frame-border)",
+                  color: "var(--text)",
+                  fontFamily: "Inter, sans-serif",
+                }}
+              />
+              {authError && (
+                <p
+                  className="experience-teaser"
+                  style={{ color: "#ff5f57", marginBottom: "10px" }}
+                >
+                  {authError}
+                </p>
+              )}
+              <button
+                type="submit"
+                className="btn-gold"
+                disabled={loading}
+                style={{ width: "100%" }}
+              >
+                {loading ? "logging in…" : "✦ log in ✦"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Root ──────────────────────────────────────────────────────────────────────
+function PublicSite() {
+  const [view, setView] = useState("profile"); // 'profile' | 'portfolio'
+
+  return view === "portfolio" ? (
+    <Portfolio onBack={() => setView("profile")} />
+  ) : (
+    <ProfileCard onViewPortfolio={() => setView("portfolio")} />
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
       {/* Floating stars + circles — always visible on every page */}
       <FloatingDeco />
-
-      {view === "portfolio" ? (
-        <Portfolio onBack={() => setView("profile")} />
-      ) : (
-        <ProfileCard onViewPortfolio={() => setView("portfolio")} />
-      )}
-    </>
+      <Routes>
+        <Route path="/" element={<PublicSite />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
