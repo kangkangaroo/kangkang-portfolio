@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
+import { supabase } from "./supabaseClient";
 
 // ── Global floating decorations (stars + star-circles) ────────────────────────
 // These sit fixed on the screen behind everything, visible on every page.
@@ -331,7 +332,7 @@ function HomeSection() {
 function AboutSection() {
   return (
     <div className="section-content">
-<div className="services-hero">
+      <div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -390,7 +391,7 @@ function ServicesSection({ onPreview, onOpenGallery }) {
 
   return (
     <div className="section-content">
-<div className="services-hero">
+      <div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -497,7 +498,7 @@ function ServicesSection({ onPreview, onOpenGallery }) {
 function ContactSection() {
   return (
     <div className="section-content">
-<div className="services-hero">
+      <div className="services-hero">
         <div className="services-hero-placeholder"></div>
         <div className="services-hero-text">
           <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -796,6 +797,29 @@ function Portfolio({ onBack }) {
 
 // ── Profile card (landing page) ───────────────────────────────────────────────
 function ProfileTab({ onViewPortfolio }) {
+  const [profile, setProfile] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadProfile() {
+      const { data, error } = await supabase
+        .from("profile")
+        .select("*")
+        .single();
+      if (error) {
+        console.error("profile load failed:", error);
+        setLoadError(true);
+      } else {
+        setProfile(data);
+      }
+    }
+    loadProfile();
+  }, []);
+
+  if (loadError)
+    return <p className="experience-empty">couldn't load profile (´•̥ ω •̥`)</p>;
+  if (!profile) return <p className="experience-empty">loading…</p>;
+
   return (
     <>
       <div className="profile-header-row">
@@ -805,29 +829,25 @@ function ProfileTab({ onViewPortfolio }) {
           </div>
         </div>
         <div className="profile-header-text">
-          <h1 className="profile-name">KANGKANG</h1>
-          <p className="profile-title">
-            Digital Artist &nbsp;|&nbsp; Web Developer
-          </p>
+          <h1 className="profile-name">{profile.name}</h1>
+          <p className="profile-title">{profile.title}</p>
           <div className="profile-contacts">
             <div className="profile-contact-item">
               <span className="profile-contact-icon">✉</span>
               <span>
-                <a href="mailto:kangkangaroooooo@gmail.com">
-                  kangkangaroooooo@gmail.com
-                </a>
+                <a href={`mailto:${profile.email_1}`}>{profile.email_1}</a>
                 {" / "}
-                <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
+                <a href={`mailto:${profile.email_2}`}>{profile.email_2}</a>
               </span>
             </div>
             <a
-              href="https://instagram.com/kangkangaroooooo"
+              href={profile.instagram_url}
               target="_blank"
               rel="noreferrer"
               className="profile-contact-item"
             >
               <span className="profile-contact-icon">@</span>
-              <span>kangkangarooo</span>
+              <span>{profile.instagram_handle}</span>
             </a>
           </div>
         </div>
@@ -836,14 +856,7 @@ function ProfileTab({ onViewPortfolio }) {
         <span>ABOUT</span>
       </div>
       <div className="profile-about-box">
-        <p>
-          Hi, you can call me Kangkang — a CS grad who somehow ended up as an
-          artist, a developer, and a QA tester who genuinely enjoys finding
-          bugs. I recently wrapped up an internship building a real attendance
-          system used by ~70 employees, and I like projects where design and
-          function actually have to work together. Always learning something new
-          along the way. ∧_∧
-        </p>
+        <p>{profile.about}</p>
       </div>
       <button className="profile-portfolio-btn" onClick={onViewPortfolio}>
         ✦ View My Portfolio ✦
