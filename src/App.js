@@ -1482,6 +1482,10 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [profileForm, setProfileForm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
+
 
   useEffect(() => {
     // check if already logged in (session survives refreshes)
@@ -1493,6 +1497,17 @@ function AdminPage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+    useEffect(() => {
+      if (!session) return;
+      supabase
+        .from("profile")
+        .select("*")
+        .single()
+        .then(({ data, error }) => {
+          if (!error) setProfileForm(data);
+        });
+    }, [session]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -1503,6 +1518,26 @@ function AdminPage() {
     });
     if (error) setAuthError(error.message);
     setLoading(false);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveMsg(null);
+    const { id, ...fields } = profileForm;
+    const { error } = await supabase
+      .from("profile")
+      .update(fields)
+      .eq("id", id);
+    if (error) {
+      setSaveMsg({ ok: false, text: `save failed: ${error.message}` });
+    } else {
+      setSaveMsg({
+        ok: true,
+        text: "saved! ✦ refresh the main page to see it",
+      });
+    }
+    setSaving(false);
   };
 
   const handleLogout = () => supabase.auth.signOut();
@@ -1527,9 +1562,82 @@ function AdminPage() {
               <p className="experience-teaser">
                 logged in as {session.user.email} ✦
               </p>
-              <p className="experience-teaser">
-                (edit tools coming in stage 4!)
-              </p>
+              {!profileForm ? (
+                <p className="experience-empty">loading profile…</p>
+              ) : (
+                <form onSubmit={handleSaveProfile}>
+                  {[
+                    ["name", "name"],
+                    ["title", "title"],
+                    ["email_1", "email 1"],
+                    ["email_2", "email 2"],
+                    ["instagram_handle", "instagram handle"],
+                    ["instagram_url", "instagram url"],
+                  ].map(([field, label]) => (
+                    <div key={field} style={{ marginBottom: "10px" }}>
+                      <div className="screenshot-gallery-label">{label}</div>
+                      <input
+                        value={profileForm[field] || ""}
+                        onChange={(e) =>
+                          setProfileForm((p) => ({
+                            ...p,
+                            [field]: e.target.value,
+                          }))
+                        }
+                        className="browser-url"
+                        style={{
+                          width: "100%",
+                          padding: "8px 10px",
+                          textAlign: "left",
+                          border: "1px solid var(--frame-border)",
+                          color: "var(--text)",
+                          fontFamily: "Inter, sans-serif",
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <div style={{ marginBottom: "14px" }}>
+                    <div className="screenshot-gallery-label">about</div>
+                    <textarea
+                      value={profileForm.about || ""}
+                      onChange={(e) =>
+                        setProfileForm((p) => ({ ...p, about: e.target.value }))
+                      }
+                      rows={6}
+                      className="browser-url"
+                      style={{
+                        width: "100%",
+                        padding: "8px 10px",
+                        textAlign: "left",
+                        border: "1px solid var(--frame-border)",
+                        color: "var(--text)",
+                        fontFamily: "Inter, sans-serif",
+                        resize: "vertical",
+                        lineHeight: 1.6,
+                      }}
+                    />
+                  </div>
+                  {saveMsg && (
+                    <p
+                      className="experience-teaser"
+                      style={{
+                        color: saveMsg.ok ? "var(--gold)" : "#ff5f57",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      {saveMsg.text}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    className="btn-gold"
+                    disabled={saving}
+                    style={{ width: "100%", marginBottom: "10px" }}
+                  >
+                    {saving ? "saving…" : "✦ save changes ✦"}
+                  </button>
+                </form>
+              )}
               <button className="profile-portfolio-btn" onClick={handleLogout}>
                 log out
               </button>
