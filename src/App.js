@@ -868,20 +868,12 @@ function ProfileTab({ onViewPortfolio }) {
 
 const TECHNICAL_CATEGORIES = [
   {
-    label: "languages & frameworks",
-    skills: [
-      "JavaScript",
-      "HTML",
-      "CSS",
-      "React.js",
-      "Node.js",
-      "REST API Integration",
-      "Responsive Web Development",
-    ],
+    label: "frontend development",
+    skills: ["HTML", "CSS", "JavaScript", "React.js", "Figma (UI/UX Design)"],
   },
   {
-    label: "design tools",
-    skills: ["Figma", "ibis Paint X", "WIX"],
+    label: "backend development",
+    skills: ["Node.js", "REST API Integration"],
   },
   {
     label: "testing & qa",
@@ -894,18 +886,15 @@ const TECHNICAL_CATEGORIES = [
     ],
   },
   {
-    label: "version control & dev tools",
-    skills: ["Git", "GitHub", "VS Code", "Vercel", "XAMPP", "MySQL"],
+    label: "other tools",
+    skills: [
+      "Git", "GitHub", "VS Code", "Vercel", "Wix", "Microsoft Office", "Google Workspace", "Technical Documentation", "Claude AI",
+    ],
   },
 ];
 
-const OTHER_SKILLS = [
-  "Microsoft Office",
-  "Google Workspace",
-  "Technical Documentation Writing",
-  "Agile/Scrum Collaboration",
-  "Cross-Functional Teamwork",
-  "Systems Integration",
+const METHODS = [
+  "Agile/Scrum Collaboration", "Systems Integration", "Cross-Functional Teamwork",
 ];
 
 const SOFT_SKILLS = [
@@ -977,10 +966,10 @@ function SkillsTab() {
               />
             ))}
             <CollapsibleSkillGroup
-              label="other skills"
-              skills={OTHER_SKILLS}
-              isOpen={openCategory === "other skills"}
-              onToggle={() => toggleCategory("other skills")}
+              label="methods"
+              skills={METHODS}
+              isOpen={openCategory === "methods"}
+              onToggle={() => toggleCategory("methods")}
             />
           </>
         ) : (
