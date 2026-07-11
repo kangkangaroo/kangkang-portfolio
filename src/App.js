@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import { supabase } from "./supabaseClient";
@@ -1453,7 +1453,7 @@ function ProfileCard({ onViewPortfolio }) {
   );
 }
 
-  // ── Admin: skills manager ─────────────────────────────────────────────────────
+// ── Admin: skills manager ─────────────────────────────────────────────────────
 const adminInputStyle = {
   width: "100%",
   padding: "8px 10px",
@@ -1517,9 +1517,7 @@ function AdminSkills() {
     const trimmed = name.trim();
     if (!trimmed) return;
     const siblings = skills.filter((s) =>
-      section === "soft"
-        ? s.section === "soft"
-        : s.category_id === category_id,
+      section === "soft" ? s.section === "soft" : s.category_id === category_id,
     );
     const nextOrder =
       siblings.length > 0
@@ -1536,10 +1534,7 @@ function AdminSkills() {
   };
 
   const deleteSkill = async (skill) => {
-    const { error } = await supabase
-      .from("skills")
-      .delete()
-      .eq("id", skill.id);
+    const { error } = await supabase.from("skills").delete().eq("id", skill.id);
     if (error) return showError(error);
     setSkills((prev) => prev.filter((s) => s.id !== skill.id));
     setMsg({ ok: true, text: `deleted "${skill.name}"` });
@@ -1780,6 +1775,272 @@ function AdminSkills() {
   );
 }
 
+// ── Bullet list with Enter-to-add / Backspace-to-remove ───────────────────────
+function BulletInputs({ bullets, setBullets }) {
+  const refs = useRef([]);
+
+  const focusBullet = (i) => {
+    // wait for React to render the new input, then focus it
+    requestAnimationFrame(() => refs.current[i]?.focus());
+  };
+
+  const updateBullet = (i, value) => {
+    setBullets((prev) => prev.map((b, idx) => (idx === i ? value : b)));
+  };
+
+  const handleKeyDown = (e, i) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setBullets((prev) => {
+        const next = [...prev];
+        next.splice(i + 1, 0, ""); // insert empty bullet after current
+        return next;
+      });
+      focusBullet(i + 1);
+    } else if (
+      e.key === "Backspace" &&
+      bullets[i] === "" &&
+      bullets.length > 1
+    ) {
+      e.preventDefault();
+      setBullets((prev) => prev.filter((_, idx) => idx !== i));
+      focusBullet(Math.max(0, i - 1));
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      {bullets.map((b, i) => (
+        <div
+          key={i}
+          style={{ display: "flex", alignItems: "center", gap: "6px" }}
+        >
+          <span style={{ color: "var(--gold)", fontSize: "8px" }}>✦</span>
+          <input
+            ref={(el) => (refs.current[i] = el)}
+            value={b}
+            onChange={(e) => updateBullet(i, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            placeholder="type a bullet, press Enter for the next…"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          {bullets.length > 1 && (
+            <button
+              type="button"
+              className="back-btn"
+              onClick={() =>
+                setBullets((prev) => prev.filter((_, idx) => idx !== i))
+              }
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Admin: experience manager ─────────────────────────────────────────────────
+function AdminExperience() {
+  const [entries, setEntries] = useState(null);
+  const [category, setCategory] = useState("internship");
+  const [role, setRole] = useState("");
+  const [company, setCompany] = useState("");
+  const [period, setPeriod] = useState("");
+  const [bullets, setBullets] = useState([""]);
+  const [msg, setMsg] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("experience")
+        .select("*")
+        .order("sort_order");
+      if (!error) setEntries(data);
+    }
+    load();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const resetForm = () => {
+    setRole("");
+    setCompany("");
+    setPeriod("");
+    setBullets([""]);
+  };
+
+  const addEntry = async () => {
+    const cleanBullets = bullets.map((b) => b.trim()).filter(Boolean);
+    if (!role.trim() || !company.trim()) {
+      setMsg({ ok: false, text: "position and company are required!" });
+      return;
+    }
+    setSaving(true);
+    const siblings = entries.filter((e) => e.category === category);
+    const nextOrder =
+      siblings.length > 0
+        ? Math.max(...siblings.map((e) => e.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("experience")
+      .insert({
+        category,
+        role: role.trim(),
+        company: company.trim(),
+        period: period.trim(),
+        points: cleanBullets,
+        sort_order: nextOrder,
+      })
+      .select()
+      .single();
+    setSaving(false);
+    if (error) return showError(error);
+    setEntries((prev) => [...prev, data]);
+    resetForm();
+    setMsg({ ok: true, text: `added "${data.role}" ✦` });
+  };
+
+  const deleteEntry = async (entry) => {
+    const confirmed = window.confirm(
+      `delete "${entry.role}" @ ${entry.company}?`,
+    );
+    if (!confirmed) return;
+    const { error } = await supabase
+      .from("experience")
+      .delete()
+      .eq("id", entry.id);
+    if (error) return showError(error);
+    setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+    setMsg({ ok: true, text: `deleted "${entry.role}"` });
+  };
+
+  if (!entries) return <p className="experience-empty">loading experience…</p>;
+
+  const shown = entries.filter((e) => e.category === category);
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>EXPERIENCE</span>
+      </div>
+
+      <div className="profile-skills-row">
+        <div className="service-tabs">
+          {["internship", "work"].map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              className={`service-tab ${category === cat ? "active" : ""}`}
+              onClick={() => setCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="skills-panel">
+          {/* the form */}
+          <div style={{ marginBottom: "8px" }}>
+            <div className="screenshot-gallery-label">position</div>
+            <input
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g. Web Developer Intern"
+              className="browser-url"
+              style={adminInputStyle}
+            />
+          </div>
+          <div style={{ marginBottom: "8px" }}>
+            <div className="screenshot-gallery-label">company</div>
+            <input
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Urban Travellers Hotel"
+              className="browser-url"
+              style={adminInputStyle}
+            />
+          </div>
+          <div style={{ marginBottom: "8px" }}>
+            <div className="screenshot-gallery-label">date &amp; hours</div>
+            <input
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              placeholder="e.g. Feb 2026 – May 2026 (300 hours)"
+              className="browser-url"
+              style={adminInputStyle}
+            />
+          </div>
+          <div style={{ marginBottom: "10px" }}>
+            <div className="screenshot-gallery-label">bullet points</div>
+            <BulletInputs bullets={bullets} setBullets={setBullets} />
+          </div>
+          <button
+            type="button"
+            className="btn-gold"
+            style={{ width: "100%" }}
+            onClick={addEntry}
+            disabled={saving}
+          >
+            {saving ? "saving…" : `✦ add ${category} ✦`}
+          </button>
+
+          {/* existing entries */}
+          {shown.length > 0 && (
+            <div style={{ marginTop: "14px" }}>
+              {shown.map((e) => (
+                <div
+                  key={e.id}
+                  className="skills-row-card"
+                  style={{ marginBottom: "6px" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "8px",
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="profile-intern-role">{e.role}</div>
+                      <div className="profile-intern-company">{e.company}</div>
+                      <div className="profile-intern-period">{e.period}</div>
+                    </div>
+                    <button
+                      type="button"
+                      className="back-btn"
+                      onClick={() => deleteEntry(e)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
 const ADMIN_TABS = ["profile", "skills", "experience"];
 const ADMIN_TAB_URLS = {
   profile: "@kangkang/admin/profile",
@@ -1877,10 +2138,7 @@ function AdminPage() {
                 logged in as {session.user.email} ✦
               </p>
               {activeTab === "experience" ? (
-                <p className="experience-empty">
-                  experience isn't editable yet — it still lives in the code.
-                  migrating it to the database is the next stage ✦
-                </p>
+                <AdminExperience />
               ) : activeTab === "skills" ? (
                 <AdminSkills />
               ) : !profileForm ? (
