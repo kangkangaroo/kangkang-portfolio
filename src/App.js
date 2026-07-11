@@ -866,45 +866,6 @@ function ProfileTab({ onViewPortfolio }) {
   );
 }
 
-const TECHNICAL_CATEGORIES = [
-  {
-    label: "frontend development",
-    skills: ["HTML", "CSS", "JavaScript", "React.js", "Figma (UI/UX Design)"],
-  },
-  {
-    label: "backend development",
-    skills: ["Node.js", "REST API Integration"],
-  },
-  {
-    label: "testing & qa",
-    skills: [
-      "Manual Software Testing",
-      "Test Case Execution",
-      "Bug Tracking & Debugging",
-      "System Performance Analysis",
-      "UAT Support",
-    ],
-  },
-  {
-    label: "other tools",
-    skills: [
-      "Git", "GitHub", "VS Code", "Vercel", "Wix", "Microsoft Office", "Google Workspace", "Technical Documentation", "Claude AI",
-    ],
-  },
-];
-
-const METHODS = [
-  "Agile/Scrum Collaboration", "Systems Integration", "Cross-Functional Teamwork",
-];
-
-const SOFT_SKILLS = [
-  "Creative Thinking",
-  "Attention to Detail",
-  "Communication",
-  "Willingness to Learn",
-  "Adaptability",
-];
-
 function CollapsibleSkillGroup({ label, skills, isOpen, onToggle }) {
   return (
     <div className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}>
@@ -931,10 +892,44 @@ function CollapsibleSkillGroup({ label, skills, isOpen, onToggle }) {
 function SkillsTab() {
   const [activeSection, setActiveSection] = useState("technical");
   const [openCategory, setOpenCategory] = useState(null);
+  const [categories, setCategories] = useState(null);
+  const [softSkills, setSoftSkills] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadSkills() {
+      const [catRes, skillRes] = await Promise.all([
+        supabase.from("skill_categories").select("*").order("sort_order"),
+        supabase.from("skills").select("*").order("sort_order"),
+      ]);
+      if (catRes.error || skillRes.error) {
+        console.error("skills load failed:", catRes.error || skillRes.error);
+        setLoadError(true);
+        return;
+      }
+      // group: attach each category's skills via the foreign key match
+      const grouped = catRes.data.map((cat) => ({
+        ...cat,
+        skills: skillRes.data
+          .filter((s) => s.category_id === cat.id)
+          .map((s) => s.name),
+      }));
+      setCategories(grouped);
+      setSoftSkills(
+        skillRes.data.filter((s) => s.section === "soft").map((s) => s.name),
+      );
+    }
+    loadSkills();
+  }, []);
 
   const toggleCategory = (label) => {
     setOpenCategory((prev) => (prev === label ? null : label));
   };
+
+  if (loadError)
+    return <p className="experience-empty">couldn't load skills (´•̥ ω •̥`)</p>;
+  if (!categories || !softSkills)
+    return <p className="experience-empty">loading…</p>;
 
   return (
     <div className="profile-skills-row">
@@ -956,29 +951,23 @@ function SkillsTab() {
       <div className="skills-panel">
         {activeSection === "technical" ? (
           <>
-            {TECHNICAL_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <CollapsibleSkillGroup
-                key={cat.label}
+                key={cat.id}
                 label={cat.label}
                 skills={cat.skills}
                 isOpen={openCategory === cat.label}
                 onToggle={() => toggleCategory(cat.label)}
               />
             ))}
-            <CollapsibleSkillGroup
-              label="methods"
-              skills={METHODS}
-              isOpen={openCategory === "methods"}
-              onToggle={() => toggleCategory("methods")}
-            />
           </>
         ) : (
           <div className="skills-row-card">
             <p className="skill-text-list skill-text-list--soft">
-              {SOFT_SKILLS.map((s, i) => (
+              {softSkills.map((s, i) => (
                 <span key={s}>
                   {s}
-                  {i < SOFT_SKILLS.length - 1 && (
+                  {i < softSkills.length - 1 && (
                     <span className="skill-text-dot">•</span>
                   )}
                 </span>
@@ -1464,6 +1453,340 @@ function ProfileCard({ onViewPortfolio }) {
   );
 }
 
+  // ── Admin: skills manager ─────────────────────────────────────────────────────
+const adminInputStyle = {
+  width: "100%",
+  padding: "8px 10px",
+  textAlign: "left",
+  border: "1px solid var(--frame-border)",
+  color: "var(--text)",
+  fontFamily: "Inter, sans-serif",
+};
+
+function AdminSkills() {
+  const [categories, setCategories] = useState(null);
+  const [skills, setSkills] = useState(null);
+  const [newCatLabel, setNewCatLabel] = useState("");
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSoftSkill, setNewSoftSkill] = useState("");
+  const [msg, setMsg] = useState(null);
+  const [activeSection, setActiveSection] = useState("technical");
+  const [openCategory, setOpenCategory] = useState(null);
+
+  const toggleCategory = (label) => {
+    setOpenCategory((prev) => (prev === label ? null : label));
+    setNewSkillName("");
+  };
+
+  useEffect(() => {
+    async function loadAll() {
+      const [catRes, skillRes] = await Promise.all([
+        supabase.from("skill_categories").select("*").order("sort_order"),
+        supabase.from("skills").select("*").order("sort_order"),
+      ]);
+      if (!catRes.error && !skillRes.error) {
+        setCategories(catRes.data);
+        setSkills(skillRes.data);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const addCategory = async () => {
+    const label = newCatLabel.trim();
+    if (!label) return;
+    const nextOrder =
+      categories.length > 0
+        ? Math.max(...categories.map((c) => c.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("skill_categories")
+      .insert({ label, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setCategories((prev) => [...prev, data]);
+    setNewCatLabel("");
+    setMsg({ ok: true, text: `added category "${label}" ✦` });
+  };
+
+  const addSkill = async ({ name, section, category_id = null }) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const siblings = skills.filter((s) =>
+      section === "soft"
+        ? s.section === "soft"
+        : s.category_id === category_id,
+    );
+    const nextOrder =
+      siblings.length > 0
+        ? Math.max(...siblings.map((s) => s.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("skills")
+      .insert({ name: trimmed, section, category_id, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setSkills((prev) => [...prev, data]);
+    setMsg({ ok: true, text: `added "${trimmed}" ✦` });
+  };
+
+  const deleteSkill = async (skill) => {
+    const { error } = await supabase
+      .from("skills")
+      .delete()
+      .eq("id", skill.id);
+    if (error) return showError(error);
+    setSkills((prev) => prev.filter((s) => s.id !== skill.id));
+    setMsg({ ok: true, text: `deleted "${skill.name}"` });
+  };
+
+  const deleteCategory = async (cat) => {
+    const catSkills = skills.filter((s) => s.category_id === cat.id);
+    if (catSkills.length > 0) {
+      const confirmed = window.confirm(
+        `"${cat.label}" has ${catSkills.length} skill(s):\n` +
+          catSkills.map((s) => `• ${s.name}`).join("\n") +
+          `\n\ndelete the category AND all its skills?`,
+      );
+      if (!confirmed) return;
+      // children first — restrict blocks the category delete otherwise
+      const { error: skillErr } = await supabase
+        .from("skills")
+        .delete()
+        .eq("category_id", cat.id);
+      if (skillErr) return showError(skillErr);
+    }
+    const { error } = await supabase
+      .from("skill_categories")
+      .delete()
+      .eq("id", cat.id);
+    if (error) return showError(error);
+    setSkills((prev) => prev.filter((s) => s.category_id !== cat.id));
+    setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+    setMsg({ ok: true, text: `deleted category "${cat.label}"` });
+  };
+
+  if (!categories || !skills)
+    return <p className="experience-empty">loading skills…</p>;
+
+  const softSkills = skills.filter((s) => s.section === "soft");
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>SKILLS</span>
+      </div>
+
+      <div className="profile-skills-row">
+        <div className="service-tabs">
+          <button
+            type="button"
+            className={`service-tab ${activeSection === "technical" ? "active" : ""}`}
+            onClick={() => setActiveSection("technical")}
+          >
+            technical
+          </button>
+          <button
+            type="button"
+            className={`service-tab ${activeSection === "soft" ? "active" : ""}`}
+            onClick={() => setActiveSection("soft")}
+          >
+            soft skills
+          </button>
+        </div>
+
+        <div className="skills-panel">
+          {activeSection === "technical" ? (
+            <>
+              {categories.map((cat) => {
+                const isOpen = openCategory === cat.label;
+                const catSkills = skills.filter(
+                  (s) => s.category_id === cat.id,
+                );
+                return (
+                  <div
+                    key={cat.id}
+                    className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="skills-toggle"
+                        style={{ width: "auto", flex: 1 }}
+                        onClick={() => toggleCategory(cat.label)}
+                      >
+                        <span
+                          className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                        >
+                          ▸
+                        </span>
+                        {cat.label}
+                      </button>
+                      <button
+                        type="button"
+                        className="back-btn"
+                        onClick={() => deleteCategory(cat)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {isOpen && (
+                      <div className="nested-skills">
+                        {catSkills.map((s) => (
+                          <div
+                            key={s.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "8px",
+                            }}
+                          >
+                            <span className="skill-text-list skill-text-list--muted">
+                              {s.name}
+                            </span>
+                            <button
+                              type="button"
+                              className="back-btn"
+                              onClick={() => deleteSkill(s)}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            marginTop: "8px",
+                          }}
+                        >
+                          <input
+                            value={newSkillName}
+                            onChange={(e) => setNewSkillName(e.target.value)}
+                            placeholder="add a skill…"
+                            className="browser-url"
+                            style={adminInputStyle}
+                          />
+                          <button
+                            type="button"
+                            className="btn-gold"
+                            onClick={() =>
+                              addSkill({
+                                name: newSkillName,
+                                section: "technical",
+                                category_id: cat.id,
+                              }).then(() => setNewSkillName(""))
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+                <input
+                  value={newCatLabel}
+                  onChange={(e) => setNewCatLabel(e.target.value)}
+                  placeholder="new category…"
+                  className="browser-url"
+                  style={adminInputStyle}
+                />
+                <button
+                  type="button"
+                  className="btn-gold"
+                  onClick={addCategory}
+                >
+                  + add
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="skills-row-card">
+              {softSkills.map((s) => (
+                <div
+                  key={s.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "8px",
+                  }}
+                >
+                  <span className="skill-text-list skill-text-list--soft">
+                    {s.name}
+                  </span>
+                  <button
+                    type="button"
+                    className="back-btn"
+                    onClick={() => deleteSkill(s)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                <input
+                  value={newSoftSkill}
+                  onChange={(e) => setNewSoftSkill(e.target.value)}
+                  placeholder="add a soft skill…"
+                  className="browser-url"
+                  style={adminInputStyle}
+                />
+                <button
+                  type="button"
+                  className="btn-gold"
+                  onClick={() =>
+                    addSkill({ name: newSoftSkill, section: "soft" }).then(() =>
+                      setNewSoftSkill(""),
+                    )
+                  }
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
+const ADMIN_TABS = ["profile", "skills", "experience"];
+const ADMIN_TAB_URLS = {
+  profile: "@kangkang/admin/profile",
+  skills: "@kangkang/admin/skills",
+  experience: "@kangkang/admin/experience",
+};
+
 // ── Admin (login) ─────────────────────────────────────────────────────────────
 function AdminPage() {
   const [session, setSession] = useState(null);
@@ -1474,7 +1797,7 @@ function AdminPage() {
   const [profileForm, setProfileForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
-
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     // check if already logged in (session survives refreshes)
@@ -1486,16 +1809,16 @@ function AdminPage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-    useEffect(() => {
-      if (!session) return;
-      supabase
-        .from("profile")
-        .select("*")
-        .single()
-        .then(({ data, error }) => {
-          if (!error) setProfileForm(data);
-        });
-    }, [session]);
+  useEffect(() => {
+    if (!session) return;
+    supabase
+      .from("profile")
+      .select("*")
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setProfileForm(data);
+      });
+  }, [session]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -1540,18 +1863,27 @@ function AdminPage() {
             <span className="dot-yellow" />
             <span className="dot-green" />
           </div>
-          <div className="browser-url">@kangkang/admin</div>
+          <div className="browser-url">
+            {session ? ADMIN_TAB_URLS[activeTab] : "@kangkang/admin"}
+          </div>
         </div>
         <div className="profile-card-body" style={{ padding: "24px 28px" }}>
           {session ? (
             <>
               <div className="profile-about-label">
-                <span>ADMIN</span>
+                <span>ADMIN — {activeTab.toUpperCase()}</span>
               </div>
               <p className="experience-teaser">
                 logged in as {session.user.email} ✦
               </p>
-              {!profileForm ? (
+              {activeTab === "experience" ? (
+                <p className="experience-empty">
+                  experience isn't editable yet — it still lives in the code.
+                  migrating it to the database is the next stage ✦
+                </p>
+              ) : activeTab === "skills" ? (
+                <AdminSkills />
+              ) : !profileForm ? (
                 <p className="experience-empty">loading profile…</p>
               ) : (
                 <form onSubmit={handleSaveProfile}>
@@ -1627,7 +1959,11 @@ function AdminPage() {
                   </button>
                 </form>
               )}
-              <button className="profile-portfolio-btn" onClick={handleLogout}>
+              <button
+                className="profile-portfolio-btn"
+                onClick={handleLogout}
+                style={{ marginTop: "20px" }}
+              >
                 log out
               </button>
             </>
@@ -1687,6 +2023,19 @@ function AdminPage() {
             </form>
           )}
         </div>
+        {session && (
+          <nav className="nav-tabs">
+            {ADMIN_TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={activeTab === tab ? "active" : ""}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+        )}
       </div>
     </div>
   );
