@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import "./index.css";
 import { supabase } from "./supabaseClient";
 
@@ -301,6 +301,31 @@ const SERVICE_DATA = {
 
 // ── Portfolio sections ────────────────────────────────────────────────────────
 function HomeSection() {
+  const [home, setHome] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadHome() {
+      const { data, error } = await supabase
+        .from("home_content")
+        .select("*")
+        .single();
+      if (error) {
+        console.error("home content load failed:", error);
+        setLoadError(true);
+      } else {
+        setHome(data);
+      }
+    }
+    loadHome();
+  }, []);
+
+  if (loadError)
+    return (
+      <p className="experience-empty">couldn't load home content (´•̥ ω •̥`)</p>
+    );
+  if (!home) return <p className="experience-empty">loading…</p>;
+
   return (
     <div
       className="section-content hero-bg"
@@ -311,18 +336,10 @@ function HomeSection() {
         <h1 className="hero-title">
           <span className="star-prefix">★—</span>welcome!
           <br />
-          kangkang's here
+          {home.heading_line2}
         </h1>
-        <p className="hero-desc">
-          "mabuhay! you can call me kangkang — a digital artist and web
-          developer with budding skills and a growing portfolio. i'm eager to
-          learn and take on new challenges! ⸜(｡˃ ᵕ ˂ )⸝♡"
-        </p>
-        <a
-          href="/Issabela_Mora_Resume.pdf"
-          download
-          className="hero-profile-link"
-        >
+        <p className="hero-desc">{home.hero_desc}</p>
+        <a href={home.resume_url} download className="hero-profile-link">
           ↓ Download Resume
         </a>
       </div>
@@ -980,89 +997,6 @@ function SkillsTab() {
   );
 }
 
-const TK_SYSTEM_SCREENSHOTS = {
-  hr: {
-    label: "HR",
-    shots: [
-      { src: "/tk-system/hr_dashboard.png", label: "dashboard" },
-      { src: "/tk-system/hr_employees-profile.png", label: "employee profile" },
-      { src: "/tk-system/hr_emp-201.png", label: "employee 201 file" },
-      { src: "/tk-system/hr_emp-202.png", label: "employee 202 file" },
-      { src: "/tk-system/hr_201.png", label: "201 file" },
-      { src: "/tk-system/hr_timekeeping.png", label: "timekeeping" },
-      { src: "/tk-system/hr_view-schedule.png", label: "view schedule" },
-      { src: "/tk-system/hr_edit-schedule.png", label: "edit schedule" },
-      { src: "/tk-system/hr_swap-schedule.png", label: "swap schedule" },
-      { src: "/tk-system/hr_leave.png", label: "leave management" },
-      { src: "/tk-system/hr_summary-report.png", label: "summary report" },
-      { src: "/tk-system/hr_settings.png", label: "settings" },
-    ],
-  },
-  operations: {
-    label: "operations",
-    shots: [
-      { src: "/tk-system/login.png", label: "login" },
-      { src: "/tk-system/op_dashboard.png", label: "dashboard" },
-      { src: "/tk-system/op_employees.png", label: "employees" },
-      { src: "/tk-system/op_roster.png", label: "roster" },
-      {
-        src: "/tk-system/op_roster-shifts-schedules.png",
-        label: "roster shifts & schedules",
-      },
-      { src: "/tk-system/op_shift-presets.png", label: "shift presets" },
-      {
-        src: "/tk-system/op_shift-presets-shifts-schedules.png",
-        label: "shift presets & schedules",
-      },
-    ],
-  },
-  superadmin: {
-    label: "superadmin",
-    shots: [
-      { src: "/tk-system/superadmin_dashboard.png", label: "dashboard" },
-      { src: "/tk-system/superadmin_analytics.png", label: "analytics" },
-      { src: "/tk-system/superadmin_audit.png", label: "audit log" },
-      { src: "/tk-system/superadmin_settings.png", label: "settings" },
-    ],
-  },
-};
-
-const TK_SYSTEM_REPORTS = [
-  {
-    id: "qa-finding-schedule-swap",
-    label: "QA finding: schedule swap",
-    pdf: "qa-finding-schedule-swap.pdf",
-  },
-  {
-    id: "bug-report-hiring-date",
-    label: "Bug report: hiring date",
-    pdf: "bug-report-hiring-date.pdf",
-  },
-];
-
-const EXPERIENCE_DATA = {
-  internship: [
-    {
-      role: "Web Developer Intern",
-      company: "Pasay Taft Tourist Dev Inc. (Urban Travellers Hotel)",
-      period: "February 2026 – May 2026 (300 hours)",
-      points: [
-        "Collaborated on system design for a fully deployed employee attendance and timekeeping system, from concept through deployment.",
-        "Built backend functionality in JavaScript and Node.js, integrating ZKTeco SDK/libraries for real-time communication with a biometric device serving ~70 employees.",
-        "Tested system performance and identified, tracked, and resolved all reported bugs, improving reliability and uptime.",
-        "Used AI-assisted tools (ChatGPT, Claude) to speed up coding and debugging.",
-      ],
-      // Entries can optionally include `screenshots` (grouped image data,
-      // shown as a two-column gallery) and/or `demoLink` (shown as a
-      // "view live demo" button when there are no screenshots to show).
-      screenshots: TK_SYSTEM_SCREENSHOTS,
-      reports: TK_SYSTEM_REPORTS,
-      demoLink: null,
-    },
-  ],
-  work: [],
-};
-
 const EXPERIENCE_EMPTY_MESSAGE = {
   internship: "no internship experience yet",
   work: "no work experience yet",
@@ -1071,23 +1005,48 @@ const EXPERIENCE_EMPTY_MESSAGE = {
 function ExperienceTab({ onReadMore }) {
   const [activeCategory, setActiveCategory] = useState("internship");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const entries = EXPERIENCE_DATA[activeCategory];
-  const entry = entries[currentIndex];
+  const [entries, setEntries] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadExperience() {
+      const { data, error } = await supabase
+        .from("experience")
+        .select("*")
+        .order("sort_order");
+      if (error) {
+        console.error("experience load failed:", error);
+        setLoadError(true);
+      } else {
+        setEntries(data);
+      }
+    }
+    loadExperience();
+  }, []);
 
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
     setCurrentIndex(0);
   };
 
+  if (loadError)
+    return (
+      <p className="experience-empty">couldn't load experience (´•̥ ω •̥`)</p>
+    );
+  if (!entries) return <p className="experience-empty">loading…</p>;
+
+  const shown = entries.filter((e) => e.category === activeCategory);
+  const entry = shown[currentIndex];
+
   const goPrev = () =>
-    setCurrentIndex((i) => (i === 0 ? entries.length - 1 : i - 1));
+    setCurrentIndex((i) => (i === 0 ? shown.length - 1 : i - 1));
   const goNext = () =>
-    setCurrentIndex((i) => (i === entries.length - 1 ? 0 : i + 1));
+    setCurrentIndex((i) => (i === shown.length - 1 ? 0 : i + 1));
 
   return (
     <div className="profile-skills-row">
       <div className="service-tabs">
-        {Object.keys(EXPERIENCE_DATA).map((cat) => (
+        {["internship", "work"].map((cat) => (
           <button
             key={cat}
             className={`service-tab ${activeCategory === cat ? "active" : ""}`}
@@ -1098,13 +1057,13 @@ function ExperienceTab({ onReadMore }) {
         ))}
       </div>
       <div className="profile-skills-group skills-panel">
-        {entries.length === 0 ? (
-          <p className="experience-empty">
+        {shown.length === 0 ? (
+          <p className="experience-empty experience-empty--plain">
             {EXPERIENCE_EMPTY_MESSAGE[activeCategory]}
           </p>
         ) : (
           <div className="experience-pager">
-            {entries.length > 1 && (
+            {shown.length > 1 && (
               <button className="experience-pager-arrow" onClick={goPrev}>
                 ‹
               </button>
@@ -1113,7 +1072,7 @@ function ExperienceTab({ onReadMore }) {
               <div className="profile-intern-role">{entry.role}</div>
               <div className="profile-intern-company">{entry.company}</div>
               <div className="profile-intern-period">{entry.period}</div>
-              <p className="experience-teaser">— {entry.points[0]}</p>
+              <p className="experience-teaser">— {entry.points?.[0]}</p>
               <button
                 className="experience-readmore"
                 onClick={() => onReadMore(entry)}
@@ -1121,7 +1080,7 @@ function ExperienceTab({ onReadMore }) {
                 read more →
               </button>
             </div>
-            {entries.length > 1 && (
+            {shown.length > 1 && (
               <button className="experience-pager-arrow" onClick={goNext}>
                 ›
               </button>
@@ -1134,34 +1093,21 @@ function ExperienceTab({ onReadMore }) {
 }
 
 function ScreenshotGallery({ screenshots, onPreview }) {
-  const roles = Object.keys(screenshots);
-  const [activeRole, setActiveRole] = useState(roles[0]);
-  const shots = screenshots[activeRole].shots;
+  if (!screenshots || screenshots.length === 0) return null;
 
   return (
     <div className="screenshot-gallery">
       <div className="screenshot-gallery-label">★ system screenshots</div>
-      <div className="service-tabs">
-        {roles.map((role) => (
-          <button
-            key={role}
-            className={`service-tab ${activeRole === role ? "active" : ""}`}
-            onClick={() => setActiveRole(role)}
-          >
-            {screenshots[role].label}
-          </button>
-        ))}
-      </div>
       <div className="screenshot-grid">
-        {shots.map((shot) => (
+        {screenshots.map((shot) => (
           <button
             key={shot.src}
             className="screenshot-thumb"
             onClick={() =>
               onPreview({
                 type: "image",
-                items: shots,
-                index: shots.indexOf(shot),
+                items: screenshots,
+                index: screenshots.indexOf(shot),
               })
             }
           >
@@ -1239,7 +1185,9 @@ function ProfileCard({ onViewPortfolio }) {
         >
           <div
             className={`lightbox-card experience-modal ${
-              expandedEntry.screenshots ? "experience-modal--wide" : ""
+              expandedEntry.screenshots?.length > 0
+                ? "experience-modal--wide"
+                : ""
             }`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1256,7 +1204,7 @@ function ProfileCard({ onViewPortfolio }) {
             </div>
             <div
               className={`experience-modal-body ${
-                expandedEntry.screenshots
+                expandedEntry.screenshots?.length > 0
                   ? `experience-modal-body--split ${
                       expandedEntry.reports && expandedEntry.reports.length > 0
                         ? ""
@@ -1279,18 +1227,19 @@ function ProfileCard({ onViewPortfolio }) {
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
-                {!expandedEntry.screenshots && expandedEntry.demoLink && (
-                  <a
-                    href={expandedEntry.demoLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-gold experience-demo-btn"
-                  >
-                    ↗ view live demo
-                  </a>
-                )}
+                {!(expandedEntry.screenshots?.length > 0) &&
+                  expandedEntry.demoLink && (
+                    <a
+                      href={expandedEntry.demoLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-gold experience-demo-btn"
+                    >
+                      ↗ view live demo
+                    </a>
+                  )}
               </div>
-              {expandedEntry.screenshots && (
+              {expandedEntry.screenshots?.length > 0 && (
                 <div className="experience-modal-gallery-col">
                   <ScreenshotGallery
                     screenshots={expandedEntry.screenshots}
@@ -1775,6 +1724,158 @@ function AdminSkills() {
   );
 }
 
+function AdminHome() {
+  const [homeForm, setHomeForm] = useState(null);
+const [saving, setSaving] = useState(false);
+const [saveMsg, setSaveMsg] = useState(null);
+const [uploadingResume, setUploadingResume] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("home_content")
+      .select("*")
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setHomeForm(data);
+      });
+  }, []);
+
+  const uploadResume = async (file) => {
+    setUploadingResume(true);
+    setSaveMsg(null);
+    try {
+      const path = `${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage
+        .from("resumes")
+        .upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("resumes").getPublicUrl(path);
+      setHomeForm((p) => ({ ...p, resume_url: data.publicUrl }));
+      setSaveMsg({
+        ok: true,
+        text: "resume uploaded ✦ don't forget to hit save changes below",
+      });
+    } catch (error) {
+      setSaveMsg({ ok: false, text: `upload failed: ${error.message}` });
+    }
+    setUploadingResume(false);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveMsg(null);
+    const { id, ...fields } = homeForm;
+    const { error } = await supabase
+      .from("home_content")
+      .update(fields)
+      .eq("id", id);
+    if (error) {
+      setSaveMsg({ ok: false, text: `save failed: ${error.message}` });
+    } else {
+      setSaveMsg({
+        ok: true,
+        text: "saved! ✦ refresh the main page to see it",
+      });
+    }
+    setSaving(false);
+  };
+
+  if (!homeForm)
+    return <p className="experience-empty">loading home content…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>HOME</span>
+      </div>
+      <form onSubmit={handleSave}>
+        <div style={{ marginBottom: "10px" }}>
+          <div className="screenshot-gallery-label">heading (2nd line)</div>
+          <input
+            value={homeForm.heading_line2 || ""}
+            onChange={(e) =>
+              setHomeForm((p) => ({ ...p, heading_line2: e.target.value }))
+            }
+            className="browser-url"
+            style={adminInputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: "14px" }}>
+          <div className="screenshot-gallery-label">hero description</div>
+          <textarea
+            value={homeForm.hero_desc || ""}
+            onChange={(e) =>
+              setHomeForm((p) => ({ ...p, hero_desc: e.target.value }))
+            }
+            rows={5}
+            className="browser-url"
+            style={{ ...adminInputStyle, resize: "vertical", lineHeight: 1.6 }}
+          />
+        </div>
+        <div style={{ marginBottom: "14px" }}>
+          <div className="screenshot-gallery-label">resume file path</div>
+          <input
+            value={homeForm.resume_url || ""}
+            onChange={(e) =>
+              setHomeForm((p) => ({ ...p, resume_url: e.target.value }))
+            }
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <div style={{ marginTop: "8px" }}>
+            <div className="screenshot-gallery-label">
+              or upload a new resume PDF
+            </div>
+            <input
+              type="file"
+              accept="application/pdf"
+              disabled={uploadingResume}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) uploadResume(file);
+              }}
+            />
+            {uploadingResume && <p className="experience-teaser">uploading…</p>}
+          </div>
+        </div>
+        {saveMsg && (
+          <p
+            className="experience-teaser"
+            style={{
+              color: saveMsg.ok ? "var(--gold)" : "#ff5f57",
+              marginBottom: "10px",
+            }}
+          >
+            {saveMsg.text}
+          </p>
+        )}
+        <button
+          type="submit"
+          className="btn-gold"
+          disabled={saving}
+          style={{ width: "100%" }}
+        >
+          {saving ? "saving…" : "✦ save changes ✦"}
+        </button>
+      </form>
+    </>
+  );
+}
+
+function AdminPlaceholder({ label }) {
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>{label.toUpperCase()}</span>
+      </div>
+      <p className="experience-empty" style={{ marginTop: "12px" }}>
+        🚧 not database-driven yet — coming in a later stage
+      </p>
+    </>
+  );
+}
+
 // ── Bullet list with Enter-to-add / Backspace-to-remove ───────────────────────
 function BulletInputs({ bullets, setBullets }) {
   const refs = useRef([]);
@@ -1850,8 +1951,11 @@ function AdminExperience() {
   const [company, setCompany] = useState("");
   const [period, setPeriod] = useState("");
   const [bullets, setBullets] = useState([""]);
+  const [newPhotos, setNewPhotos] = useState([]); // files staged for the new entry
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -1872,6 +1976,20 @@ function AdminExperience() {
     setCompany("");
     setPeriod("");
     setBullets([""]);
+    setNewPhotos([]);
+  };
+
+  // uploads one file to the experience-photos bucket, returns {src, label, path}
+  const uploadPhoto = async (file, cat) => {
+    const path = `${cat}/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage
+      .from("experience-photos")
+      .upload(path, file);
+    if (upErr) throw upErr;
+    const { data } = supabase.storage
+      .from("experience-photos")
+      .getPublicUrl(path);
+    return { src: data.publicUrl, label: file.name, path };
   };
 
   const addEntry = async () => {
@@ -1881,28 +1999,37 @@ function AdminExperience() {
       return;
     }
     setSaving(true);
-    const siblings = entries.filter((e) => e.category === category);
-    const nextOrder =
-      siblings.length > 0
-        ? Math.max(...siblings.map((e) => e.sort_order)) + 1
-        : 0;
-    const { data, error } = await supabase
-      .from("experience")
-      .insert({
-        category,
-        role: role.trim(),
-        company: company.trim(),
-        period: period.trim(),
-        points: cleanBullets,
-        sort_order: nextOrder,
-      })
-      .select()
-      .single();
+    try {
+      const uploaded = [];
+      for (const file of newPhotos) {
+        uploaded.push(await uploadPhoto(file, category));
+      }
+      const siblings = entries.filter((e) => e.category === category);
+      const nextOrder =
+        siblings.length > 0
+          ? Math.max(...siblings.map((e) => e.sort_order)) + 1
+          : 0;
+      const { data, error } = await supabase
+        .from("experience")
+        .insert({
+          category,
+          role: role.trim(),
+          company: company.trim(),
+          period: period.trim(),
+          points: cleanBullets,
+          screenshots: uploaded,
+          sort_order: nextOrder,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      setEntries((prev) => [...prev, data]);
+      resetForm();
+      setMsg({ ok: true, text: `added "${data.role}" ✦` });
+    } catch (error) {
+      showError(error);
+    }
     setSaving(false);
-    if (error) return showError(error);
-    setEntries((prev) => [...prev, data]);
-    resetForm();
-    setMsg({ ok: true, text: `added "${data.role}" ✦` });
   };
 
   const deleteEntry = async (entry) => {
@@ -1917,6 +2044,49 @@ function AdminExperience() {
     if (error) return showError(error);
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
     setMsg({ ok: true, text: `deleted "${entry.role}"` });
+  };
+
+  const addPhotosToEntry = async (entry, files) => {
+    setUploadingId(entry.id);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        uploaded.push(await uploadPhoto(file, entry.category));
+      }
+      const nextScreenshots = [...(entry.screenshots || []), ...uploaded];
+      const { error } = await supabase
+        .from("experience")
+        .update({ screenshots: nextScreenshots })
+        .eq("id", entry.id);
+      if (error) throw error;
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.id === entry.id ? { ...e, screenshots: nextScreenshots } : e,
+        ),
+      );
+      setMsg({ ok: true, text: `added ${uploaded.length} photo(s) ✦` });
+    } catch (error) {
+      showError(error);
+    }
+    setUploadingId(null);
+  };
+
+  const removePhoto = async (entry, photo) => {
+    const nextScreenshots = (entry.screenshots || []).filter(
+      (p) => p.path !== photo.path,
+    );
+    const { error } = await supabase
+      .from("experience")
+      .update({ screenshots: nextScreenshots })
+      .eq("id", entry.id);
+    if (error) return showError(error);
+    await supabase.storage.from("experience-photos").remove([photo.path]);
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.id === entry.id ? { ...e, screenshots: nextScreenshots } : e,
+      ),
+    );
+    setMsg({ ok: true, text: "photo removed" });
   };
 
   if (!entries) return <p className="experience-empty">loading experience…</p>;
@@ -1979,6 +2149,20 @@ function AdminExperience() {
             <div className="screenshot-gallery-label">bullet points</div>
             <BulletInputs bullets={bullets} setBullets={setBullets} />
           </div>
+          <div style={{ marginBottom: "10px" }}>
+            <div className="screenshot-gallery-label">photos (optional)</div>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => setNewPhotos(Array.from(e.target.files))}
+            />
+            {newPhotos.length > 0 && (
+              <p className="experience-teaser">
+                {newPhotos.length} photo(s) ready to upload on save
+              </p>
+            )}
+          </div>
           <button
             type="button"
             className="btn-gold"
@@ -1992,35 +2176,115 @@ function AdminExperience() {
           {/* existing entries */}
           {shown.length > 0 && (
             <div style={{ marginTop: "14px" }}>
-              {shown.map((e) => (
-                <div
-                  key={e.id}
-                  className="skills-row-card"
-                  style={{ marginBottom: "6px" }}
-                >
+              {shown.map((e) => {
+                const isOpen = expandedId === e.id;
+                return (
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "8px",
-                    }}
+                    key={e.id}
+                    className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+                    style={{ marginBottom: "6px" }}
                   >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="profile-intern-role">{e.role}</div>
-                      <div className="profile-intern-company">{e.company}</div>
-                      <div className="profile-intern-period">{e.period}</div>
-                    </div>
-                    <button
-                      type="button"
-                      className="back-btn"
-                      onClick={() => deleteEntry(e)}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                      }}
                     >
-                      ✕
-                    </button>
+                      <button
+                        type="button"
+                        className="skills-toggle"
+                        style={{ width: "auto", flex: 1 }}
+                        onClick={() => setExpandedId(isOpen ? null : e.id)}
+                      >
+                        <span
+                          className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                        >
+                          ▸
+                        </span>
+                        <span
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <span className="profile-intern-role">{e.role}</span>
+                          <span className="profile-intern-company">
+                            {e.company}
+                          </span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="back-btn"
+                        onClick={() => deleteEntry(e)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {isOpen && (
+                      <div className="nested-skills">
+                        <div className="profile-intern-period">{e.period}</div>
+                        <ul className="profile-intern-points">
+                          {(e.points || []).map((p, i) => (
+                            <li key={i}>{p}</li>
+                          ))}
+                        </ul>
+
+                        <div
+                          className="screenshot-gallery-label"
+                          style={{ marginTop: "12px" }}
+                        >
+                          photos
+                        </div>
+                        {e.screenshots && e.screenshots.length > 0 && (
+                          <div className="screenshot-grid">
+                            {e.screenshots.map((photo) => (
+                              <div
+                                key={photo.path}
+                                style={{ position: "relative" }}
+                              >
+                                <div className="screenshot-thumb">
+                                  <img src={photo.src} alt={photo.label} />
+                                </div>
+                                <button
+                                  type="button"
+                                  className="back-btn"
+                                  style={{
+                                    position: "absolute",
+                                    top: "2px",
+                                    right: "2px",
+                                    background: "rgba(0,0,0,0.6)",
+                                  }}
+                                  onClick={() => removePhoto(e, photo)}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          disabled={uploadingId === e.id}
+                          onChange={(ev) =>
+                            addPhotosToEntry(e, Array.from(ev.target.files))
+                          }
+                          style={{ marginTop: "8px" }}
+                        />
+                        {uploadingId === e.id && (
+                          <p className="experience-teaser">uploading…</p>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -2041,11 +2305,23 @@ function AdminExperience() {
   );
 }
 
-const ADMIN_TABS = ["profile", "skills", "experience"];
+const ADMIN_TABS = [
+  "profile",
+  "skills",
+  "experience",
+  "home",
+  "about me",
+  "services",
+  "get in touch",
+];
 const ADMIN_TAB_URLS = {
   profile: "@kangkang/admin/profile",
   skills: "@kangkang/admin/skills",
   experience: "@kangkang/admin/experience",
+  home: "@kangkang/admin/home",
+  "about me": "@kangkang/admin/about",
+  services: "@kangkang/admin/services",
+  "get in touch": "@kangkang/admin/contact",
 };
 
 // ── Admin (login) ─────────────────────────────────────────────────────────────
@@ -2141,6 +2417,14 @@ function AdminPage() {
                 <AdminExperience />
               ) : activeTab === "skills" ? (
                 <AdminSkills />
+              ) : activeTab === "home" ? (
+                <AdminHome />
+              ) : activeTab === "about me" ? (
+                <AdminPlaceholder label="about me" />
+              ) : activeTab === "services" ? (
+                <AdminPlaceholder label="services" />
+              ) : activeTab === "get in touch" ? (
+                <AdminPlaceholder label="get in touch" />
               ) : !profileForm ? (
                 <p className="experience-empty">loading profile…</p>
               ) : (
@@ -2300,14 +2584,17 @@ function AdminPage() {
 }
 
 // ── Root ──────────────────────────────────────────────────────────────────────
-function PublicSite() {
-  const [view, setView] = useState("profile"); // 'profile' | 'portfolio'
+// Portfolio is now the main route ("/"), profile card gets its own route
+// ("/profile-card") — same pattern as /admin. Each wrapper just supplies the
+// navigate() call as whichever prop the inner component already expects.
+function PortfolioPage() {
+  const navigate = useNavigate();
+  return <Portfolio onBack={() => navigate("/profile-card")} />;
+}
 
-  return view === "portfolio" ? (
-    <Portfolio onBack={() => setView("profile")} />
-  ) : (
-    <ProfileCard onViewPortfolio={() => setView("portfolio")} />
-  );
+function ProfileCardPage() {
+  const navigate = useNavigate();
+  return <ProfileCard onViewPortfolio={() => navigate("/")} />;
 }
 
 export default function App() {
@@ -2316,7 +2603,8 @@ export default function App() {
       {/* Floating stars + circles — always visible on every page */}
       <FloatingDeco />
       <Routes>
-        <Route path="/" element={<PublicSite />} />
+        <Route path="/" element={<PortfolioPage />} />
+        <Route path="/profile-card" element={<ProfileCardPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>

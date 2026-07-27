@@ -1024,6 +1024,12 @@ body {
   border-radius: 6px;
 }
 
+.experience-empty--plain {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
 .experience-card {
 /*   border: 1px dashed var(--frame-border);
   border-radius: 6px;
@@ -1101,6 +1107,7 @@ body {
 .experience-modal-body.experience-modal-body--split {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
   gap: 0;
   padding: 0;
   max-height: 72vh;
