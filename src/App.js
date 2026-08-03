@@ -227,77 +227,6 @@ function FloatingDeco() {
   );
 }
 
-// ── Service data ──────────────────────────────────────────────────────────────
-const SERVICE_DATA = {
-  "digital artist": {
-    quote: "One brushstroke at a time — all from my phone! ⸜(｡˃ ᵕ ˂ )⸝",
-    tool: "ibis Paint X",
-    toolIcon: "🎨",
-    projects: [
-      { label: "1" },
-      { label: "2" },
-      { label: "3" },
-      { label: "4" },
-      { label: "5" },
-    ],
-  },
-  "ui/ux designer": {
-    quote: "If I can imagine it, Figma helps me build it!",
-    tool: "Figma + Wix",
-    toolIcon: "🔷",
-    projects: [
-      {
-        title: "portfolio",
-        sub: "ui/ux design · figma prototype",
-        description:
-          "A personal portfolio concept designed and prototyped in Figma — mockups and clickable navigation flows built out before development began.",
-        img: "/f1.png",
-        link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=360-35&t=QppVUxLHnlqnkizB-1",
-        screenshots: [
-          "/portfolio-figma/1.png",
-          "/portfolio-figma/2.png",
-          "/portfolio-figma/3.png",
-          "/portfolio-figma/4.png",
-          "/portfolio-figma/5.png",
-          "/portfolio-figma/6.png",
-        ],
-      },
-      {
-        title: "profile card",
-        sub: "ui/ux design · figma prototype",
-        description:
-          "A Figma prototype for my portfolio's landing screen — combining my avatar, contact details, and a short bio into a single, focused first impression.",
-        img: "/f2.png",
-        link: "https://www.figma.com/proto/VeGPiK0FUfDK0qpkimExHf/kangkang?node-id=454-28&t=QppVUxLHnlqnkizB-1",
-        screenshots: ["/profile_card-figma/1.png"],
-      },
-      {
-        title: "gvc-portfolio",
-        sub: "academic project · wix",
-        description:
-          "An academic project for my GVC subject, built as a blog-format site in Wix to compile and document all our class activities in one place.",
-        img: "/s2.png",
-        link: "https://belamora04.wixsite.com/ibmora0",
-      },
-    ],
-  },
-  "web developer": {
-    quote: "Turning designs into real websites, one line of code at a time!",
-    tool: "VS Code",
-    toolIcon: "💻",
-    projects: [
-      {
-        title: "kangkang-portfolio",
-        sub: "personal portfolio · react.js · vercel",
-        description:
-          "My personal portfolio — a Figma mockup brought to life with React.js and CSS, deployed on Vercel. I extended the original design during development, building out the browser-frame UI and tabbed navigation myself, then refined things further until the whole site matched my own aesthetic — a star-motif, cozy-dark theme built around a mascot character I created.",
-        img: "/kangkang-portfolio/1.png",
-        link: "kangkang-portfolio.vercel.app",
-        tools: ["React", "CSS", "Vercel", "GitHub", "VS Code"],
-      },
-    ],
-  },
-};
 
 // ── Portfolio sections ────────────────────────────────────────────────────────
 function HomeSection() {
@@ -348,6 +277,49 @@ function HomeSection() {
 }
 
 function AboutSection() {
+  const [content, setContent] = useState(null);
+  const [blocks, setBlocks] = useState(null);
+  const [items, setItems] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadAbout() {
+      const [contentRes, blockRes, itemRes] = await Promise.all([
+        supabase.from("about_content").select("*").single(),
+        supabase.from("about_blocks").select("*").order("sort_order"),
+        supabase.from("about_items").select("*").order("sort_order"),
+      ]);
+      if (contentRes.error || blockRes.error || itemRes.error) {
+        console.error(
+          "about load failed:",
+          contentRes.error || blockRes.error || itemRes.error,
+        );
+        setLoadError(true);
+        return;
+      }
+      setContent(contentRes.data);
+      setBlocks(blockRes.data);
+      setItems(itemRes.data);
+    }
+    loadAbout();
+  }, []);
+
+  if (loadError)
+    return (
+      <div className="section-content">
+        <p className="experience-empty">couldn't load about me (´•̥ ω •̥`)</p>
+      </div>
+    );
+  if (!content || !blocks || !items)
+    return (
+      <div className="section-content">
+        <p className="experience-empty">loading…</p>
+      </div>
+    );
+
+  const listBlocks = blocks.filter((b) => b.block_type === "list");
+  const paragraphBlocks = blocks.filter((b) => b.block_type === "paragraph");
+
   return (
     <div className="section-content">
       <div className="services-hero">
@@ -359,53 +331,56 @@ function AboutSection() {
           </h2>
         </div>
       </div>
-      <p className="service-quote">
-        "A digital artist & web developer, having fun doing both"
-      </p>
+      {content.quote && <p className="service-quote">"{content.quote}"</p>}
 
       <div className="about-details-card">
-        <div className="about-columns">
-          <div className="about-block">
-            <div className="about-block-title">short intro</div>
-            <ul className="about-list">
-              <li>pronouns: she/her</li>
-              <li>nationality: Filipino 🇵🇭</li>
-              <li>
-                personality: introverted, detail-oriented — suited for focused
-                design and patient debugging
-              </li>
-            </ul>
+        {listBlocks.length > 0 && (
+          <div className="about-columns">
+            {listBlocks.map((block) => (
+              <div key={block.id} className="about-block">
+                <div className="about-block-title">{block.title}</div>
+                <ul className="about-list">
+                  {items
+                    .filter((i) => i.block_id === block.id)
+                    .map((item) => (
+                      <li key={item.id}>{item.text}</li>
+                    ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <div className="about-block">
-            <div className="about-block-title">what I do</div>
-            <ul className="about-list">
-              <li>character illustration</li>
-              <li>UI/UX web design</li>
-              <li>front-end web development</li>
-              <li>software QA testing & bug tracking</li>
-            </ul>
+        )}
+        {listBlocks.length > 0 && paragraphBlocks.length > 0 && (
+          <div className="divider-line" />
+        )}
+        {paragraphBlocks.map((block) => (
+          <div key={block.id} className="about-block">
+            <div className="about-block-title">{block.title}</div>
+            <p className="about-paragraph">{block.paragraph}</p>
           </div>
-        </div>
-        <div className="divider-line" />
-        <div className="about-block">
-          <div className="about-block-title">why I do this</div>
-          <p className="about-paragraph">
-            Coding never came easy to me, but somewhere in the struggle I found
-            what I actually love — designing how things should feel, and chasing
-            down what's broken until it isn't. Turns out QA is my favorite part.
-          </p>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function ServicesSection({ onPreview, onOpenGallery }) {
-  const [activeService, setActiveService] = useState("digital artist");
-  const svcData = SERVICE_DATA[activeService];
-  const isUiUx = activeService === "ui/ux designer";
-  const isWebDev = activeService === "web developer";
-  const showsGalleryModal = isUiUx || isWebDev;
+function ServicesSection() {
+  const navigate = useNavigate();
+
+  const services = [
+    {
+      key: "digital artist",
+      emoji: "🎨",
+      sub: "character illustrations · ibis Paint X",
+      route: "/digital-artist",
+    },
+    {
+      key: "web developer",
+      emoji: "💻",
+      sub: "ui/ux design · front-end dev",
+      route: "/web-developer",
+    },
+  ];
 
   return (
     <div className="section-content">
@@ -419,101 +394,86 @@ function ServicesSection({ onPreview, onOpenGallery }) {
           </h2>
         </div>
       </div>
-      <div className="service-tabs">
-        {Object.keys(SERVICE_DATA).map((key) => (
-          <button
-            key={key}
-            className={`service-tab ${activeService === key ? "active" : ""}`}
-            onClick={() => setActiveService(key)}
+      <p className="service-quote">"Pick a door — art or code, I do both!"</p>
+
+      <div className="service-scroll">
+        {services.map((s) => (
+          <div
+            key={s.key}
+            className="service-scroll-card"
+            onClick={() => navigate(s.route)}
+            style={{ cursor: "pointer" }}
           >
-            {key}
-          </button>
+            <div className="service-scroll-emoji">{s.emoji}</div>
+            <div className="service-project-info">
+              <h4>{s.key} →</h4>
+              <p>{s.sub}</p>
+            </div>
+          </div>
         ))}
-      </div>
-      <p className="service-quote">"{svcData.quote}"</p>
-
-      {activeService === "digital artist" ? (
-        <div className="artwork-scroll">
-          {svcData.projects.map((p, i) => (
-            <div
-              key={i}
-              className="artwork-item"
-              onClick={() =>
-                onPreview(
-                  svcData.projects.map((_, idx) => `/${idx + 1}.png`),
-                  i,
-                )
-              }
-            >
-              <img
-                src={`/${i + 1}.png`}
-                alt={p.label}
-                className="artwork-img"
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="service-scroll">
-          {svcData.projects.map((p, i) => (
-            <div
-              key={i}
-              className="service-scroll-card"
-              onClick={showsGalleryModal ? () => onOpenGallery(p) : undefined}
-              style={showsGalleryModal ? { cursor: "pointer" } : undefined}
-            >
-              {p.img && (
-                <div className="service-project-cover">
-                  <img src={p.img} alt={p.title} />
-                </div>
-              )}
-              {!p.img && p.emoji && (
-                <div className="service-scroll-emoji">{p.emoji}</div>
-              )}
-              <div className="service-project-info">
-                <h4>
-                  {showsGalleryModal ? (
-                    p.title
-                  ) : p.link ? (
-                    <a
-                      href={p.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="service-title-link"
-                    >
-                      {p.title} ↗
-                    </a>
-                  ) : (
-                    p.title
-                  )}
-                </h4>
-                <p>{p.sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="tool-badge-row">
-        <div className="tool-badge">
-          <span>{svcData.toolIcon}</span>
-          <span>{svcData.tool}</span>
-        </div>
-        {activeService === "digital artist" && (
-          <button
-            className="btn-gold btn-gold--disabled"
-            disabled
-            title="Gallery link coming soon"
-          >
-            view gallery
-          </button>
-        )}
       </div>
     </div>
   );
 }
 
 function ContactSection() {
+  const [content, setContent] = useState(null);
+  const [groups, setGroups] = useState(null);
+  const [items, setItems] = useState(null);
+  const [resumeUrl, setResumeUrl] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function loadContact() {
+      const [contentRes, groupRes, itemRes, homeRes] = await Promise.all([
+        supabase.from("contact_content").select("*").single(),
+        supabase.from("contact_groups").select("*").order("sort_order"),
+        supabase.from("contact_items").select("*").order("sort_order"),
+        supabase.from("home_content").select("resume_url").single(),
+      ]);
+      if (contentRes.error || groupRes.error || itemRes.error) {
+        console.error(
+          "contact load failed:",
+          contentRes.error || groupRes.error || itemRes.error,
+        );
+        setLoadError(true);
+        return;
+      }
+      setContent(contentRes.data);
+      setGroups(groupRes.data);
+      setItems(itemRes.data);
+      // resume is nice-to-have — if it fails, section still renders
+      if (!homeRes.error) setResumeUrl(homeRes.data.resume_url);
+    }
+    loadContact();
+  }, []);
+
+  if (loadError)
+    return (
+      <div className="section-content">
+        <p className="experience-empty">
+          couldn't load contact info (´•̥ ω •̥`)
+        </p>
+      </div>
+    );
+  if (!content || !groups || !items)
+    return (
+      <div className="section-content">
+        <p className="experience-empty">loading…</p>
+      </div>
+    );
+
+  // group items into lines: same line_group = one row, joined by " / "
+  const linesForGroup = (groupId) => {
+    const groupItems = items.filter((i) => i.group_id === groupId);
+    const lineMap = new Map();
+    for (const item of groupItems) {
+      if (!lineMap.has(item.line_group)) lineMap.set(item.line_group, []);
+      lineMap.get(item.line_group).push(item);
+    }
+    return [...lineMap.values()];
+  };
+
   return (
     <div className="section-content">
       <div className="services-hero">
@@ -526,50 +486,47 @@ function ContactSection() {
           </h2>
         </div>
       </div>
-      <p className="service-quote">
-        "Looking for a way to contact me? I've got you!"
-      </p>
-      <div className="contact-group">
-        <div className="contact-group-title">ways to reach me</div>
-        <div className="profile-contact-item contact-item">
-          <span className="profile-contact-icon contact-icon">✉</span>
-          <span>
-            <a href="mailto:kangkangaroooooo@gmail.com">
-              kangkangaroooooo@gmail.com
-            </a>
-            {" / "}
-            <a href="mailto:ibmora00@gmail.com">ibmora00@gmail.com</a>
-          </span>
+      {content.quote && <p className="service-quote">"{content.quote}"</p>}
+
+      {groups.map((group) => (
+        <div key={group.id} className="contact-group">
+          <div className="contact-group-title">{group.title}</div>
+          {linesForGroup(group.id).map((line) => (
+            <div key={line[0].id} className="profile-contact-item contact-item">
+              <span className="profile-contact-icon contact-icon">
+                {line[0].icon}
+              </span>
+              <span>
+                {line.map((item, i) => (
+                  <span key={item.id}>
+                    <a
+                      href={item.url}
+                      {...(!item.url.startsWith("mailto:") && {
+                        target: "_blank",
+                        rel: "noreferrer",
+                      })}
+                    >
+                      {item.label}
+                    </a>
+                    {i < line.length - 1 && " / "}
+                  </span>
+                ))}
+              </span>
+            </div>
+          ))}
         </div>
-        <div className="profile-contact-item contact-item">
-          <span className="profile-contact-icon contact-icon">f</span>
-          <span>
-            <a href="https://www.facebook.com/profile.php?id=61591034440884">
-              kang kang
-            </a>
-            {" / "}
-            <a href="https://www.facebook.com/profile.php?id=61590355995156">
-              issabela mora
-            </a>
-          </span>
-        </div>
-        <div className="profile-contact-item contact-item">
-          <span className="profile-contact-icon contact-icon">@</span>
-          <span>
-            <a href="https://www.instagram.com/kangkangarooo?igsh=MWFudXM4d2p0NTIwZQ==">
-              kangkangarooo
-            </a>
-          </span>
-        </div>
-      </div>
-      <a
-        href="/Issabela_Mora_Resume.pdf"
-        download
-        className="btn-gold"
-        style={{ marginTop: "8px" }}
-      >
-        ↓ Download Resume
-      </a>
+      ))}
+
+      {resumeUrl && (
+        <a
+          href={resumeUrl}
+          download
+          className="btn-gold"
+          style={{ marginTop: "8px" }}
+        >
+          ↓ Download Resume
+        </a>
+      )}
     </div>
   );
 }
@@ -606,12 +563,7 @@ function Portfolio({ onBack }) {
       case "about me":
         return <AboutSection />;
       case "services":
-        return (
-          <ServicesSection
-            onPreview={openLightbox}
-            onOpenGallery={setGalleryModal}
-          />
-        );
+        return <ServicesSection />;
       case "get in touch":
         return <ContactSection />;
       default:
@@ -1724,6 +1676,1180 @@ function AdminSkills() {
   );
 }
 
+// ── Admin: about manager ──────────────────────────────────────────────────────
+function AdminAbout() {
+  const [content, setContent] = useState(null); // { id, quote }
+  const [blocks, setBlocks] = useState(null);
+  const [items, setItems] = useState(null);
+  const [openBlock, setOpenBlock] = useState(null);
+  const [newBlockTitle, setNewBlockTitle] = useState("");
+  const [newBlockType, setNewBlockType] = useState("list");
+  const [newItemText, setNewItemText] = useState("");
+  const [msg, setMsg] = useState(null);
+  const [savingQuote, setSavingQuote] = useState(false);
+
+  useEffect(() => {
+    async function loadAll() {
+      const [contentRes, blockRes, itemRes] = await Promise.all([
+        supabase.from("about_content").select("*").single(),
+        supabase.from("about_blocks").select("*").order("sort_order"),
+        supabase.from("about_items").select("*").order("sort_order"),
+      ]);
+      if (!contentRes.error && !blockRes.error && !itemRes.error) {
+        setContent(contentRes.data);
+        setBlocks(blockRes.data);
+        setItems(itemRes.data);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const toggleBlock = (id) => {
+    setOpenBlock((prev) => (prev === id ? null : id));
+    setNewItemText("");
+  };
+
+  const saveQuote = async () => {
+    setSavingQuote(true);
+    const { error } = await supabase
+      .from("about_content")
+      .update({ quote: content.quote })
+      .eq("id", content.id);
+    if (error) showError(error);
+    else setMsg({ ok: true, text: "quote saved ✦" });
+    setSavingQuote(false);
+  };
+
+  const addBlock = async () => {
+    const title = newBlockTitle.trim();
+    if (!title) return;
+    const nextOrder =
+      blocks.length > 0 ? Math.max(...blocks.map((b) => b.sort_order)) + 1 : 0;
+    const { data, error } = await supabase
+      .from("about_blocks")
+      .insert({ title, block_type: newBlockType, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setBlocks((prev) => [...prev, data]);
+    setNewBlockTitle("");
+    setMsg({ ok: true, text: `added block "${title}" ✦` });
+  };
+
+  const deleteBlock = async (block) => {
+    const blockItems = items.filter((i) => i.block_id === block.id);
+    if (blockItems.length > 0) {
+      const confirmed = window.confirm(
+        `"${block.title}" has ${blockItems.length} item(s):\n` +
+          blockItems.map((i) => `• ${i.text}`).join("\n") +
+          `\n\ndelete the block AND all its items?`,
+      );
+      if (!confirmed) return;
+      // children first — restrict blocks the delete otherwise
+      const { error: itemErr } = await supabase
+        .from("about_items")
+        .delete()
+        .eq("block_id", block.id);
+      if (itemErr) return showError(itemErr);
+    } else {
+      const confirmed = window.confirm(`delete block "${block.title}"?`);
+      if (!confirmed) return;
+    }
+    const { error } = await supabase
+      .from("about_blocks")
+      .delete()
+      .eq("id", block.id);
+    if (error) return showError(error);
+    setItems((prev) => prev.filter((i) => i.block_id !== block.id));
+    setBlocks((prev) => prev.filter((b) => b.id !== block.id));
+    setMsg({ ok: true, text: `deleted block "${block.title}"` });
+  };
+
+  const addItem = async (block) => {
+    const text = newItemText.trim();
+    if (!text) return;
+    const siblings = items.filter((i) => i.block_id === block.id);
+    const nextOrder =
+      siblings.length > 0
+        ? Math.max(...siblings.map((i) => i.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("about_items")
+      .insert({ block_id: block.id, text, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setItems((prev) => [...prev, data]);
+    setNewItemText("");
+    setMsg({ ok: true, text: `added item ✦` });
+  };
+
+  const deleteItem = async (item) => {
+    const { error } = await supabase
+      .from("about_items")
+      .delete()
+      .eq("id", item.id);
+    if (error) return showError(error);
+    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    setMsg({ ok: true, text: "item deleted" });
+  };
+
+  const saveParagraph = async (block) => {
+    const { error } = await supabase
+      .from("about_blocks")
+      .update({ paragraph: block.paragraph })
+      .eq("id", block.id);
+    if (error) return showError(error);
+    setMsg({ ok: true, text: `paragraph saved ✦` });
+  };
+
+  if (!content || !blocks || !items)
+    return <p className="experience-empty">loading about content…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>ABOUT ME</span>
+      </div>
+
+      {/* quote */}
+      <div style={{ marginBottom: "14px" }}>
+        <div className="screenshot-gallery-label">quote</div>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <input
+            value={content.quote || ""}
+            onChange={(e) =>
+              setContent((p) => ({ ...p, quote: e.target.value }))
+            }
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button
+            type="button"
+            className="btn-gold"
+            disabled={savingQuote}
+            onClick={saveQuote}
+          >
+            {savingQuote ? "…" : "save"}
+          </button>
+        </div>
+      </div>
+
+      {/* blocks */}
+      <div className="skills-panel">
+        {blocks.map((block) => {
+          const isOpen = openBlock === block.id;
+          const blockItems = items.filter((i) => i.block_id === block.id);
+          return (
+            <div
+              key={block.id}
+              className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="skills-toggle"
+                  style={{ width: "auto", flex: 1 }}
+                  onClick={() => toggleBlock(block.id)}
+                >
+                  <span
+                    className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                  >
+                    ▸
+                  </span>
+                  {block.title}
+                  <span
+                    className="skill-text-list skill-text-list--muted"
+                    style={{ fontSize: "9px", marginLeft: "4px" }}
+                  >
+                    ({block.block_type})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="back-btn"
+                  onClick={() => deleteBlock(block)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="nested-skills">
+                  {block.block_type === "paragraph" ? (
+                    <>
+                      <textarea
+                        value={block.paragraph || ""}
+                        onChange={(e) =>
+                          setBlocks((prev) =>
+                            prev.map((b) =>
+                              b.id === block.id
+                                ? { ...b, paragraph: e.target.value }
+                                : b,
+                            ),
+                          )
+                        }
+                        rows={4}
+                        className="browser-url"
+                        style={{
+                          ...adminInputStyle,
+                          resize: "vertical",
+                          lineHeight: 1.6,
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn-gold"
+                        style={{ marginTop: "8px" }}
+                        onClick={() => saveParagraph(block)}
+                      >
+                        save paragraph
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {blockItems.map((item) => (
+                        <div
+                          key={item.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px",
+                          }}
+                        >
+                          <span className="skill-text-list skill-text-list--muted">
+                            {item.text}
+                          </span>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            onClick={() => deleteItem(item)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          marginTop: "8px",
+                        }}
+                      >
+                        <input
+                          value={newItemText}
+                          onChange={(e) => setNewItemText(e.target.value)}
+                          placeholder="add an item…"
+                          className="browser-url"
+                          style={adminInputStyle}
+                        />
+                        <button
+                          type="button"
+                          className="btn-gold"
+                          onClick={() => addItem(block)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* add new block */}
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <input
+            value={newBlockTitle}
+            onChange={(e) => setNewBlockTitle(e.target.value)}
+            placeholder="new block title…"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <select
+            value={newBlockType}
+            onChange={(e) => setNewBlockType(e.target.value)}
+            className="browser-url"
+            style={{ ...adminInputStyle, width: "auto" }}
+          >
+            <option value="list">list</option>
+            <option value="paragraph">paragraph</option>
+          </select>
+          <button type="button" className="btn-gold" onClick={addBlock}>
+            + add
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
+// ── Admin: web projects manager ───────────────────────────────────────────────
+function AdminWebProjects() {
+  const [projects, setProjects] = useState(null);
+  const [title, setTitle] = useState("");
+  const [sub, setSub] = useState("");
+  const [description, setDescription] = useState("");
+  const [toolsText, setToolsText] = useState("");
+  const [link, setLink] = useState("");
+  const [coverFile, setCoverFile] = useState(null);
+  const [shotFiles, setShotFiles] = useState([]);
+const [saving, setSaving] = useState(false);
+const [editingId, setEditingId] = useState(null);
+const [formVersion, setFormVersion] = useState(0);
+  const [expandedId, setExpandedId] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from("web_projects")
+      .select("*")
+      .order("sort_order")
+      .then(({ data, error }) => {
+        if (!error) setProjects(data);
+      });
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const uploadFile = async (file, folder) => {
+    const path = `${folder}/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage
+      .from("web-projects")
+      .upload(path, file);
+    if (upErr) throw upErr;
+    const { data } = supabase.storage.from("web-projects").getPublicUrl(path);
+    return { src: data.publicUrl, label: file.name, path };
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setSub("");
+    setDescription("");
+    setToolsText("");
+    setLink("");
+    setCoverFile(null);
+    setShotFiles([]);
+    setFormVersion((v) => v + 1);
+  };
+
+  const startEdit = (proj) => {
+    setEditingId(proj.id);
+    setTitle(proj.title);
+    setSub(proj.sub || "");
+    setDescription(proj.description || "");
+    setToolsText((proj.tools || []).join(", "));
+    setLink(proj.link || "");
+    setCoverFile(null);
+    setShotFiles([]);
+    setFormVersion((v) => v + 1);
+    setMsg(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    resetForm();
+  };
+
+  const saveProject = async () => {
+    if (!title.trim()) {
+      setMsg({ ok: false, text: "title is required!" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const tools = toolsText
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      if (editingId) {
+        // ── UPDATE existing project ──
+        const current = projects.find((p) => p.id === editingId);
+        let coverUpdate = {};
+        if (coverFile) {
+          const cover = await uploadFile(coverFile, "covers");
+          coverUpdate = { cover_src: cover.src, cover_path: cover.path };
+        }
+        const newShots = [];
+        for (const file of shotFiles) {
+          newShots.push(await uploadFile(file, "screenshots"));
+        }
+        const updates = {
+          title: title.trim(),
+          sub: sub.trim(),
+          description: description.trim(),
+          tools,
+          link: link.trim() || null,
+          ...coverUpdate,
+          ...(newShots.length > 0
+            ? { screenshots: [...(current.screenshots || []), ...newShots] }
+            : {}),
+        };
+        const { data, error } = await supabase
+          .from("web_projects")
+          .update(updates)
+          .eq("id", editingId)
+          .select()
+          .single();
+        if (error) throw error;
+        // old cover cleanup — only AFTER the update succeeded
+        if (coverFile && current.cover_path) {
+          await supabase.storage
+            .from("web-projects")
+            .remove([current.cover_path]);
+        }
+        setProjects((prev) =>
+          prev.map((p) => (p.id === editingId ? data : p)),
+        );
+        setEditingId(null);
+        resetForm();
+        setMsg({ ok: true, text: `updated "${data.title}" ✦` });
+      } else {
+        // ── INSERT new project ──
+        let cover = { src: null, path: null };
+        if (coverFile) cover = await uploadFile(coverFile, "covers");
+        const shots = [];
+        for (const file of shotFiles) {
+          shots.push(await uploadFile(file, "screenshots"));
+        }
+        const nextOrder =
+          projects.length > 0
+            ? Math.max(...projects.map((p) => p.sort_order)) + 1
+            : 0;
+        const { data, error } = await supabase
+          .from("web_projects")
+          .insert({
+            title: title.trim(),
+            sub: sub.trim(),
+            description: description.trim(),
+            tools,
+            link: link.trim() || null,
+            cover_src: cover.src,
+            cover_path: cover.path,
+            screenshots: shots,
+            sort_order: nextOrder,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        setProjects((prev) => [...prev, data]);
+        resetForm();
+        setMsg({ ok: true, text: `added "${data.title}" ✦` });
+      }
+    } catch (error) {
+      showError(error);
+    }
+setSaving(false);
+  };
+
+  const deleteProject = async (proj) => {
+    const confirmed = window.confirm(
+      `delete "${proj.title}" and all its images?`,
+    );
+    if (!confirmed) return;
+    const { error } = await supabase
+      .from("web_projects")
+      .delete()
+      .eq("id", proj.id);
+    if (error) return showError(error);
+    const paths = [
+      ...(proj.cover_path ? [proj.cover_path] : []),
+      ...(proj.screenshots || []).map((s) => s.path),
+    ];
+    if (paths.length > 0)
+      await supabase.storage.from("web-projects").remove(paths);
+    setProjects((prev) => prev.filter((p) => p.id !== proj.id));
+    setMsg({ ok: true, text: `deleted "${proj.title}"` });
+  };
+
+  const addShotsToProject = async (proj, files) => {
+    setUploadingId(proj.id);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        uploaded.push(await uploadFile(file, "screenshots"));
+      }
+      const nextShots = [...(proj.screenshots || []), ...uploaded];
+      const { error } = await supabase
+        .from("web_projects")
+        .update({ screenshots: nextShots })
+        .eq("id", proj.id);
+      if (error) throw error;
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === proj.id ? { ...p, screenshots: nextShots } : p,
+        ),
+      );
+      setMsg({ ok: true, text: `added ${uploaded.length} screenshot(s) ✦` });
+    } catch (error) {
+      showError(error);
+    }
+    setUploadingId(null);
+  };
+
+  const removeShot = async (proj, shot) => {
+    const nextShots = (proj.screenshots || []).filter(
+      (s) => s.path !== shot.path,
+    );
+    const { error } = await supabase
+      .from("web_projects")
+      .update({ screenshots: nextShots })
+      .eq("id", proj.id);
+    if (error) return showError(error);
+    await supabase.storage.from("web-projects").remove([shot.path]);
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === proj.id ? { ...p, screenshots: nextShots } : p,
+      ),
+    );
+    setMsg({ ok: true, text: "screenshot removed" });
+  };
+
+  if (!projects) return <p className="experience-empty">loading projects…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>WEB DEVELOPER — PROJECTS</span>
+      </div>
+
+      <div className="skills-panel">
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">project title</div>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. kangkang-portfolio"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">subtitle</div>
+          <input
+            value={sub}
+            onChange={(e) => setSub(e.target.value)}
+            placeholder="e.g. personal portfolio · react.js · vercel"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">description</div>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="browser-url"
+            style={{ ...adminInputStyle, resize: "vertical", lineHeight: 1.6 }}
+          />
+        </div>
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">
+            tools used (comma-separated)
+          </div>
+          <input
+            value={toolsText}
+            onChange={(e) => setToolsText(e.target.value)}
+            placeholder="e.g. React, CSS, Vercel, GitHub"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">live link (optional)</div>
+          <input
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="https://…"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: "8px" }}>
+          <div className="screenshot-gallery-label">cover photo</div>
+          <input
+            key={`cover-${formVersion}`}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setCoverFile(e.target.files[0] || null)}
+          />
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <div className="screenshot-gallery-label">screenshots</div>
+          <input
+            key={`shots-${formVersion}`}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setShotFiles(Array.from(e.target.files))}
+          />
+          {shotFiles.length > 0 && (
+            <p className="experience-teaser">
+              {shotFiles.length} screenshot(s) ready to upload on save
+            </p>
+          )}
+        </div>
+
+        {editingId && (
+          <p className="experience-teaser" style={{ color: "var(--gold)" }}>
+            ✎ editing "{projects.find((p) => p.id === editingId)?.title}"
+          </p>
+        )}
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button
+            type="button"
+            className="btn-gold"
+            style={{ flex: 1 }}
+            onClick={saveProject}
+            disabled={saving}
+          >
+            {saving
+              ? "saving…"
+              : editingId
+                ? "✦ save changes ✦"
+                : "✦ add project ✦"}
+          </button>
+          {editingId && (
+            <button type="button" className="back-btn" onClick={cancelEdit}>
+              cancel
+            </button>
+          )}
+        </div>
+
+        {projects.length > 0 && (
+          <div style={{ marginTop: "14px" }}>
+            {projects.map((proj) => {
+              const isOpen = expandedId === proj.id;
+              return (
+                <div
+                  key={proj.id}
+                  className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+                  style={{ marginBottom: "6px" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "8px",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="skills-toggle"
+                      style={{ width: "auto", flex: 1 }}
+                      onClick={() => setExpandedId(isOpen ? null : proj.id)}
+                    >
+                      <span
+                        className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                      >
+                        ▸
+                      </span>
+                      <span
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <span className="profile-intern-role">
+                          {proj.title}
+                        </span>
+                        <span className="profile-intern-company">
+                          {proj.sub}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="back-btn"
+                      onClick={() => startEdit(proj)}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
+                      className="back-btn"
+                      onClick={() => deleteProject(proj)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {isOpen && (
+                    <div className="nested-skills">
+                      {proj.tools && proj.tools.length > 0 && (
+                        <p className="skill-text-list skill-text-list--muted">
+                          {proj.tools.join(" • ")}
+                        </p>
+                      )}
+
+                      <div
+                        className="screenshot-gallery-label"
+                        style={{ marginTop: "10px" }}
+                      >
+                        cover
+                      </div>
+                      {proj.cover_src ? (
+                        <div
+                          className="screenshot-thumb"
+                          style={{ width: "120px" }}
+                        >
+                          <img src={proj.cover_src} alt="cover" />
+                        </div>
+                      ) : (
+                        <p className="experience-teaser">no cover yet</p>
+                      )}
+
+                      <div
+                        className="screenshot-gallery-label"
+                        style={{ marginTop: "12px" }}
+                      >
+                        screenshots
+                      </div>
+                      {proj.screenshots && proj.screenshots.length > 0 && (
+                        <div className="screenshot-grid">
+                          {proj.screenshots.map((shot) => (
+                            <div
+                              key={shot.path}
+                              style={{ position: "relative" }}
+                            >
+                              <div className="screenshot-thumb">
+                                <img src={shot.src} alt={shot.label} />
+                              </div>
+                              <button
+                                type="button"
+                                className="back-btn"
+                                style={{
+                                  position: "absolute",
+                                  top: "2px",
+                                  right: "2px",
+                                  background: "rgba(0,0,0,0.6)",
+                                }}
+                                onClick={() => removeShot(proj, shot)}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={uploadingId === proj.id}
+                        onChange={(ev) => {
+                          const files = Array.from(ev.target.files);
+                          if (files.length > 0)
+                            addShotsToProject(proj, files);
+                          ev.target.value = "";
+                        }}
+                        style={{ marginTop: "8px" }}
+                      />
+                      {uploadingId === proj.id && (
+                        <p className="experience-teaser">uploading…</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
+// ── Admin: contact manager ────────────────────────────────────────────────────
+function AdminContact() {
+  const [content, setContent] = useState(null); // { id, quote }
+  const [groups, setGroups] = useState(null);
+  const [items, setItems] = useState(null);
+  const [openGroup, setOpenGroup] = useState(null);
+  const [newGroupTitle, setNewGroupTitle] = useState("");
+  const [newItem, setNewItem] = useState({
+    icon: "",
+    label: "",
+    url: "",
+    line_group: "0",
+  });
+  const [msg, setMsg] = useState(null);
+  const [savingQuote, setSavingQuote] = useState(false);
+
+  useEffect(() => {
+    async function loadAll() {
+      const [contentRes, groupRes, itemRes] = await Promise.all([
+        supabase.from("contact_content").select("*").single(),
+        supabase.from("contact_groups").select("*").order("sort_order"),
+        supabase.from("contact_items").select("*").order("sort_order"),
+      ]);
+      if (!contentRes.error && !groupRes.error && !itemRes.error) {
+        setContent(contentRes.data);
+        setGroups(groupRes.data);
+        setItems(itemRes.data);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const toggleGroup = (id) => {
+    setOpenGroup((prev) => (prev === id ? null : id));
+    setNewItem({ icon: "", label: "", url: "", line_group: "0" });
+  };
+
+  const saveQuote = async () => {
+    setSavingQuote(true);
+    const { error } = await supabase
+      .from("contact_content")
+      .update({ quote: content.quote })
+      .eq("id", content.id);
+    if (error) showError(error);
+    else setMsg({ ok: true, text: "quote saved ✦" });
+    setSavingQuote(false);
+  };
+
+  const addGroup = async () => {
+    const title = newGroupTitle.trim();
+    if (!title) return;
+    const nextOrder =
+      groups.length > 0 ? Math.max(...groups.map((g) => g.sort_order)) + 1 : 0;
+    const { data, error } = await supabase
+      .from("contact_groups")
+      .insert({ title, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setGroups((prev) => [...prev, data]);
+    setNewGroupTitle("");
+    setMsg({ ok: true, text: `added group "${title}" ✦` });
+  };
+
+  const deleteGroup = async (group) => {
+    const groupItems = items.filter((i) => i.group_id === group.id);
+    if (groupItems.length > 0) {
+      const confirmed = window.confirm(
+        `"${group.title}" has ${groupItems.length} item(s):\n` +
+          groupItems.map((i) => `• ${i.label}`).join("\n") +
+          `\n\ndelete the group AND all its items?`,
+      );
+      if (!confirmed) return;
+      // children first — restrict blocks the delete otherwise
+      const { error: itemErr } = await supabase
+        .from("contact_items")
+        .delete()
+        .eq("group_id", group.id);
+      if (itemErr) return showError(itemErr);
+    } else {
+      const confirmed = window.confirm(`delete group "${group.title}"?`);
+      if (!confirmed) return;
+    }
+    const { error } = await supabase
+      .from("contact_groups")
+      .delete()
+      .eq("id", group.id);
+    if (error) return showError(error);
+    setItems((prev) => prev.filter((i) => i.group_id !== group.id));
+    setGroups((prev) => prev.filter((g) => g.id !== group.id));
+    setMsg({ ok: true, text: `deleted group "${group.title}"` });
+  };
+
+  const addItem = async (group) => {
+    const label = newItem.label.trim();
+    const url = newItem.url.trim();
+    if (!label || !url) {
+      setMsg({ ok: false, text: "label and url are required!" });
+      return;
+    }
+    const siblings = items.filter((i) => i.group_id === group.id);
+    const nextOrder =
+      siblings.length > 0
+        ? Math.max(...siblings.map((i) => i.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("contact_items")
+      .insert({
+        group_id: group.id,
+        icon: newItem.icon.trim(),
+        label,
+        url,
+        line_group: parseInt(newItem.line_group, 10) || 0,
+        sort_order: nextOrder,
+      })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setItems((prev) => [...prev, data]);
+    setNewItem({ icon: "", label: "", url: "", line_group: "0" });
+    setMsg({ ok: true, text: `added "${label}" ✦` });
+  };
+
+  const deleteItem = async (item) => {
+    const { error } = await supabase
+      .from("contact_items")
+      .delete()
+      .eq("id", item.id);
+    if (error) return showError(error);
+    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    setMsg({ ok: true, text: `deleted "${item.label}"` });
+  };
+
+  if (!content || !groups || !items)
+    return <p className="experience-empty">loading contact content…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>GET IN TOUCH</span>
+      </div>
+
+      {/* quote */}
+      <div style={{ marginBottom: "14px" }}>
+        <div className="screenshot-gallery-label">quote</div>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <input
+            value={content.quote || ""}
+            onChange={(e) =>
+              setContent((p) => ({ ...p, quote: e.target.value }))
+            }
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button
+            type="button"
+            className="btn-gold"
+            disabled={savingQuote}
+            onClick={saveQuote}
+          >
+            {savingQuote ? "…" : "save"}
+          </button>
+        </div>
+      </div>
+
+      {/* groups */}
+      <div className="skills-panel">
+        {groups.map((group) => {
+          const isOpen = openGroup === group.id;
+          const groupItems = items.filter((i) => i.group_id === group.id);
+          return (
+            <div
+              key={group.id}
+              className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="skills-toggle"
+                  style={{ width: "auto", flex: 1 }}
+                  onClick={() => toggleGroup(group.id)}
+                >
+                  <span
+                    className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                  >
+                    ▸
+                  </span>
+                  {group.title}
+                </button>
+                <button
+                  type="button"
+                  className="back-btn"
+                  onClick={() => deleteGroup(group)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="nested-skills">
+                  {groupItems.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                      }}
+                    >
+                      <span className="skill-text-list skill-text-list--muted">
+                        <span style={{ color: "var(--gold)" }}>
+                          {item.icon}
+                        </span>{" "}
+                        {item.label}
+                        <span
+                          style={{ fontSize: "9px", marginLeft: "6px" }}
+                        >
+                          (line {item.line_group})
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        className="back-btn"
+                        onClick={() => deleteItem(item)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* add item — mini stack */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <input
+                        value={newItem.icon}
+                        onChange={(e) =>
+                          setNewItem((p) => ({ ...p, icon: e.target.value }))
+                        }
+                        placeholder="icon"
+                        className="browser-url"
+                        style={{ ...adminInputStyle, width: "60px" }}
+                      />
+                      <input
+                        value={newItem.label}
+                        onChange={(e) =>
+                          setNewItem((p) => ({ ...p, label: e.target.value }))
+                        }
+                        placeholder="label (visible text)…"
+                        className="browser-url"
+                        style={adminInputStyle}
+                      />
+                    </div>
+                    <input
+                      value={newItem.url}
+                      onChange={(e) =>
+                        setNewItem((p) => ({ ...p, url: e.target.value }))
+                      }
+                      placeholder="url (mailto: or https://)…"
+                      className="browser-url"
+                      style={adminInputStyle}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span className="screenshot-gallery-label">
+                        line #
+                      </span>
+                      <input
+                        value={newItem.line_group}
+                        onChange={(e) =>
+                          setNewItem((p) => ({
+                            ...p,
+                            line_group: e.target.value,
+                          }))
+                        }
+                        className="browser-url"
+                        style={{ ...adminInputStyle, width: "60px" }}
+                      />
+                      <button
+                        type="button"
+                        className="btn-gold"
+                        style={{ marginLeft: "auto" }}
+                        onClick={() => addItem(group)}
+                      >
+                        + add item
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* add new group */}
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <input
+            value={newGroupTitle}
+            onChange={(e) => setNewGroupTitle(e.target.value)}
+            placeholder="new group title…"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button type="button" className="btn-gold" onClick={addGroup}>
+            + add
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
 function AdminHome() {
   const [homeForm, setHomeForm] = useState(null);
 const [saving, setSaving] = useState(false);
@@ -1853,28 +2979,16 @@ const [uploadingResume, setUploadingResume] = useState(false);
         <button
           type="submit"
           className="btn-gold"
-          disabled={saving}
           style={{ width: "100%" }}
+          disabled={saving}
         >
-          {saving ? "saving…" : "✦ save changes ✦"}
+          {saving ? "saving…" : "✦ save home content ✦"}
         </button>
       </form>
     </>
   );
 }
 
-function AdminPlaceholder({ label }) {
-  return (
-    <>
-      <div className="profile-about-label" style={{ marginTop: "20px" }}>
-        <span>{label.toUpperCase()}</span>
-      </div>
-      <p className="experience-empty" style={{ marginTop: "12px" }}>
-        🚧 not database-driven yet — coming in a later stage
-      </p>
-    </>
-  );
-}
 
 // ── Bullet list with Enter-to-add / Backspace-to-remove ───────────────────────
 function BulletInputs({ bullets, setBullets }) {
@@ -2305,6 +3419,262 @@ function AdminExperience() {
   );
 }
 
+// ── Admin: artworks manager ───────────────────────────────────────────────────
+function AdminArtworks() {
+  const [categories, setCategories] = useState(null);
+  const [artworks, setArtworks] = useState(null);
+  const [openCategory, setOpenCategory] = useState(null);
+  const [newCatLabel, setNewCatLabel] = useState("");
+  const [uploadingId, setUploadingId] = useState(null);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    async function loadAll() {
+      const [catRes, artRes] = await Promise.all([
+        supabase.from("artwork_categories").select("*").order("sort_order"),
+        supabase.from("artworks").select("*").order("sort_order"),
+      ]);
+      if (!catRes.error && !artRes.error) {
+        setCategories(catRes.data);
+        setArtworks(artRes.data);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const addCategory = async () => {
+    const label = newCatLabel.trim();
+    if (!label) return;
+    const nextOrder =
+      categories.length > 0
+        ? Math.max(...categories.map((c) => c.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("artwork_categories")
+      .insert({ label, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setCategories((prev) => [...prev, data]);
+    setNewCatLabel("");
+    setMsg({ ok: true, text: `added category "${label}" ✦` });
+  };
+
+  const deleteCategory = async (cat) => {
+    const catArts = artworks.filter((a) => a.category_id === cat.id);
+    if (catArts.length > 0) {
+      const confirmed = window.confirm(
+        `"${cat.label}" has ${catArts.length} artwork(s).\n\ndelete the category AND all its artworks + files?`,
+      );
+      if (!confirmed) return;
+      // children first — restrict blocks the category delete otherwise
+      const { error: artErr } = await supabase
+        .from("artworks")
+        .delete()
+        .eq("category_id", cat.id);
+      if (artErr) return showError(artErr);
+      // clean up storage files too
+      await supabase.storage
+        .from("artworks")
+        .remove(catArts.map((a) => a.path));
+    } else {
+      const confirmed = window.confirm(`delete category "${cat.label}"?`);
+      if (!confirmed) return;
+    }
+    const { error } = await supabase
+      .from("artwork_categories")
+      .delete()
+      .eq("id", cat.id);
+    if (error) return showError(error);
+    setArtworks((prev) => prev.filter((a) => a.category_id !== cat.id));
+    setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+    setMsg({ ok: true, text: `deleted category "${cat.label}"` });
+  };
+
+  const uploadArtworks = async (cat, files) => {
+    setUploadingId(cat.id);
+    try {
+      const siblings = artworks.filter((a) => a.category_id === cat.id);
+      let nextOrder =
+        siblings.length > 0
+          ? Math.max(...siblings.map((a) => a.sort_order)) + 1
+          : 0;
+      const inserted = [];
+      for (const file of files) {
+        const path = `${cat.id}/${Date.now()}-${file.name}`;
+        const { error: upErr } = await supabase.storage
+          .from("artworks")
+          .upload(path, file);
+        if (upErr) throw upErr;
+        const { data: urlData } = supabase.storage
+          .from("artworks")
+          .getPublicUrl(path);
+        const { data, error } = await supabase
+          .from("artworks")
+          .insert({
+            category_id: cat.id,
+            src: urlData.publicUrl,
+            label: file.name.replace(/\.[^.]+$/, ""),
+            path,
+            sort_order: nextOrder++,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        inserted.push(data);
+      }
+      setArtworks((prev) => [...prev, ...inserted]);
+      setMsg({ ok: true, text: `uploaded ${inserted.length} artwork(s) ✦` });
+    } catch (error) {
+      showError(error);
+    }
+    setUploadingId(null);
+  };
+
+  const deleteArtwork = async (art) => {
+    const { error } = await supabase
+      .from("artworks")
+      .delete()
+      .eq("id", art.id);
+    if (error) return showError(error);
+    await supabase.storage.from("artworks").remove([art.path]);
+    setArtworks((prev) => prev.filter((a) => a.id !== art.id));
+    setMsg({ ok: true, text: "artwork removed" });
+  };
+
+  if (!categories || !artworks)
+    return <p className="experience-empty">loading artworks…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label" style={{ marginTop: "20px" }}>
+        <span>DIGITAL ARTIST — GALLERY</span>
+      </div>
+
+      <div className="skills-panel">
+        {categories.map((cat) => {
+          const isOpen = openCategory === cat.id;
+          const catArts = artworks.filter((a) => a.category_id === cat.id);
+          return (
+            <div
+              key={cat.id}
+              className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="skills-toggle"
+                  style={{ width: "auto", flex: 1 }}
+                  onClick={() =>
+                    setOpenCategory((prev) => (prev === cat.id ? null : cat.id))
+                  }
+                >
+                  <span className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}>
+                    ▸
+                  </span>
+                  {cat.label}
+                  <span
+                    className="skill-text-list skill-text-list--muted"
+                    style={{ fontSize: "9px", marginLeft: "4px" }}
+                  >
+                    ({catArts.length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="back-btn"
+                  onClick={() => deleteCategory(cat)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="nested-skills">
+                  {catArts.length > 0 && (
+                    <div className="screenshot-grid">
+                      {catArts.map((art) => (
+                        <div key={art.id} style={{ position: "relative" }}>
+                          <div className="screenshot-thumb">
+                            <img src={art.src} alt={art.label || "artwork"} />
+                          </div>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            style={{
+                              position: "absolute",
+                              top: "2px",
+                              right: "2px",
+                              background: "rgba(0,0,0,0.6)",
+                            }}
+                            onClick={() => deleteArtwork(art)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploadingId === cat.id}
+                    onChange={(ev) => {
+                      const files = Array.from(ev.target.files);
+                      if (files.length > 0) uploadArtworks(cat, files);
+                      ev.target.value = "";
+                    }}
+                    style={{ marginTop: "8px" }}
+                  />
+                  {uploadingId === cat.id && (
+                    <p className="experience-teaser">uploading…</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <input
+            value={newCatLabel}
+            onChange={(e) => setNewCatLabel(e.target.value)}
+            placeholder="new category… (e.g. chibi, portraits)"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button type="button" className="btn-gold" onClick={addCategory}>
+            + add
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{
+            color: msg.ok ? "var(--gold)" : "#ff5f57",
+            marginTop: "10px",
+          }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
 const ADMIN_TABS = [
   "profile",
   "skills",
@@ -2393,7 +3763,10 @@ function AdminPage() {
 
   return (
     <div className="profile-bg">
-      <div className="profile-card" style={{ maxWidth: "400px" }}>
+      <div
+        className="profile-card"
+        style={{ maxWidth: session ? "560px" : "400px" }}
+      >
         <div className="browser-bar">
           <div className="browser-dots">
             <span className="dot-red" />
@@ -2420,11 +3793,14 @@ function AdminPage() {
               ) : activeTab === "home" ? (
                 <AdminHome />
               ) : activeTab === "about me" ? (
-                <AdminPlaceholder label="about me" />
+                <AdminAbout />
               ) : activeTab === "services" ? (
-                <AdminPlaceholder label="services" />
+                <>
+                  <AdminArtworks />
+                  <AdminWebProjects />
+                </>
               ) : activeTab === "get in touch" ? (
-                <AdminPlaceholder label="get in touch" />
+                <AdminContact />
               ) : !profileForm ? (
                 <p className="experience-empty">loading profile…</p>
               ) : (
@@ -2583,6 +3959,453 @@ function AdminPage() {
   );
 }
 
+// ── Digital artist gallery page ───────────────────────────────────────────────
+function DigitalArtistPage() {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState(null);
+  const [artworks, setArtworks] = useState(null);
+  const [activeCat, setActiveCat] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const [catRes, artRes] = await Promise.all([
+        supabase.from("artwork_categories").select("*").order("sort_order"),
+        supabase.from("artworks").select("*").order("sort_order"),
+      ]);
+      if (catRes.error || artRes.error) {
+        console.error("artworks load failed:", catRes.error || artRes.error);
+        setLoadError(true);
+        return;
+      }
+      setCategories(catRes.data);
+      setArtworks(artRes.data);
+      if (catRes.data.length > 0) setActiveCat(catRes.data[0].id);
+    }
+    load();
+  }, []);
+
+  const shown = artworks
+    ? artworks.filter((a) => a.category_id === activeCat)
+    : [];
+
+  const goPrev = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === 0 ? p.items.length - 1 : p.index - 1,
+    }));
+  const goNext = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === p.items.length - 1 ? 0 : p.index + 1,
+    }));
+
+  return (
+    <div className="page single" onContextMenu={(e) => e.preventDefault()}>
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span>{" "}
+                {lightbox.items[lightbox.index].label || "artwork preview"}
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setLightbox(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="lightbox-img-wrap">
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                  onClick={goPrev}
+                >
+                  ‹
+                </button>
+              )}
+              <div className="lightbox-frame">
+                <img
+                  src={lightbox.items[lightbox.index].src}
+                  alt={lightbox.items[lightbox.index].label || "artwork"}
+                  className="lightbox-img"
+                  draggable={false}
+                />
+              </div>
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                  onClick={goNext}
+                >
+                  ›
+                </button>
+              )}
+              {lightbox.items.length > 1 && (
+                <div className="lightbox-counter">
+                  {lightbox.index + 1} / {lightbox.items.length}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="browser-frame">
+        <div className="browser-bar">
+          <div className="browser-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
+          </div>
+          <div className="browser-url">@kangkang/digital-artist</div>
+          <button className="back-btn" onClick={() => navigate("/")}>
+            ← back
+          </button>
+        </div>
+        <div className="section-content">
+          <h2 className="section-title">
+            <span className="star-prefix">★—</span> digital artist
+          </h2>
+          <p className="service-quote">
+            "One brushstroke at a time — all from my phone! ⸜(｡˃ ᵕ ˂ )⸝"
+          </p>
+
+          {loadError ? (
+            <p className="experience-empty">couldn't load artworks (´•̥ ω •̥`)</p>
+          ) : !categories || !artworks ? (
+            <p className="experience-empty">loading…</p>
+          ) : categories.length === 0 ? (
+            <p className="experience-empty">🚧 gallery coming soon (˶ᵔ ᵕ ᵔ˶)</p>
+          ) : (
+            <>
+              <div className="service-tabs">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className={`service-tab ${activeCat === cat.id ? "active" : ""}`}
+                    onClick={() => setActiveCat(cat.id)}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {shown.length === 0 ? (
+                <p className="experience-empty">
+                  no artworks in this category yet
+                </p>
+              ) : (
+                <div className="artwork-scroll">
+                  {shown.map((art, i) => (
+                    <div
+                      key={art.id}
+                      className="artwork-item"
+                      onClick={() => setLightbox({ items: shown, index: i })}
+                    >
+                      <img
+                        src={art.src}
+                        alt={art.label || "artwork"}
+                        className="artwork-img"
+                        loading="lazy"
+                        draggable={false}
+                      />
+                      {art.label && (
+                        <div className="artwork-label">{art.label}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Web developer projects page ───────────────────────────────────────────────
+function WebDeveloperPage() {
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState(null);
+  const [activeProject, setActiveProject] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("web_projects")
+        .select("*")
+        .order("sort_order");
+      if (error) {
+        console.error("web projects load failed:", error);
+        setLoadError(true);
+      } else {
+        setProjects(data);
+      }
+    }
+    load();
+  }, []);
+
+  const goPrev = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === 0 ? p.items.length - 1 : p.index - 1,
+    }));
+  const goNext = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === p.items.length - 1 ? 0 : p.index + 1,
+    }));
+
+  return (
+    <div className="page single">
+      {/* project detail modal */}
+      {activeProject && (
+        <div
+          className="lightbox-overlay"
+          onClick={() => setActiveProject(null)}
+        >
+          <div
+            className="lightbox-card experience-modal experience-modal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> {activeProject.title}
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setActiveProject(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="experience-modal-body experience-modal-body--split experience-modal-body--split-2">
+              <div className="experience-modal-details">
+                <div className="profile-intern-role">{activeProject.title}</div>
+                <div className="profile-intern-company">
+                  {activeProject.sub}
+                </div>
+                <div className="experience-modal-divider" />
+                {activeProject.description && (
+                  <p
+                    className="about-paragraph"
+                    style={{ marginTop: "10px", marginBottom: "16px" }}
+                  >
+                    {activeProject.description}
+                  </p>
+                )}
+                {activeProject.tools && activeProject.tools.length > 0 && (
+                  <>
+                    <div className="about-block-title">
+                      tools &amp; software used
+                    </div>
+                    <p
+                      className="skill-text-list skill-text-list--primary"
+                      style={{ marginBottom: "16px" }}
+                    >
+                      {activeProject.tools.map((t, i) => (
+                        <span key={t}>
+                          {t}
+                          {i < activeProject.tools.length - 1 && (
+                            <span className="skill-text-dot">•</span>
+                          )}
+                        </span>
+                      ))}
+                    </p>
+                  </>
+                )}
+                {activeProject.link && (
+                  
+                    <a href={activeProject.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-gold experience-demo-btn"
+                  >
+                    ↗ view live site
+                  </a>
+                )}
+              </div>
+              <div className="experience-modal-gallery-col">
+                <div className="screenshot-gallery">
+                  <div className="screenshot-gallery-label">★ screenshots</div>
+                  {activeProject.screenshots &&
+                  activeProject.screenshots.length > 0 ? (
+                    <div className="screenshot-grid">
+                      {activeProject.screenshots.map((shot, i) => (
+                        <button
+                          key={shot.path}
+                          className="screenshot-thumb"
+                          onClick={() =>
+                            setLightbox({
+                              items: activeProject.screenshots,
+                              index: i,
+                            })
+                          }
+                        >
+                          <img
+                            src={shot.src}
+                            alt={shot.label}
+                            loading="lazy"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    activeProject.cover_src && (
+                      <button
+                        className="screenshot-thumb"
+                        style={{ width: "100%", aspectRatio: "16 / 10" }}
+                        onClick={() =>
+                          setLightbox({
+                            items: [
+                              {
+                                src: activeProject.cover_src,
+                                label: activeProject.title,
+                              },
+                            ],
+                            index: 0,
+                          })
+                        }
+                      >
+                        <img
+                          src={activeProject.cover_src}
+                          alt={activeProject.title}
+                        />
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* screenshot lightbox — stacks ON TOP of the modal */}
+      {lightbox && (
+        <div
+          className="lightbox-overlay screenshot-preview-overlay"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span>{" "}
+                {lightbox.items[lightbox.index].label || "screenshot"}
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setLightbox(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="lightbox-img-wrap">
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                  onClick={goPrev}
+                >
+                  ‹
+                </button>
+              )}
+              <div className="lightbox-frame">
+                <img
+                  src={lightbox.items[lightbox.index].src}
+                  alt={lightbox.items[lightbox.index].label || "screenshot"}
+                  className="lightbox-img"
+                />
+              </div>
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                  onClick={goNext}
+                >
+                  ›
+                </button>
+              )}
+              {lightbox.items.length > 1 && (
+                <div className="lightbox-counter">
+                  {lightbox.index + 1} / {lightbox.items.length}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="browser-frame">
+        <div className="browser-bar">
+          <div className="browser-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
+          </div>
+          <div className="browser-url">@kangkang/web-developer</div>
+          <button className="back-btn" onClick={() => navigate("/")}>
+            ← back
+          </button>
+        </div>
+        <div className="section-content">
+          <h2 className="section-title">
+            <span className="star-prefix">★—</span> web developer
+          </h2>
+          <p className="service-quote">
+            "Turning designs into real websites, one line of code at a time!"
+          </p>
+
+          {loadError ? (
+            <p className="experience-empty">
+              couldn't load projects (´•̥ ω •̥`)
+            </p>
+          ) : !projects ? (
+            <p className="experience-empty">loading…</p>
+          ) : projects.length === 0 ? (
+            <p className="experience-empty">🚧 projects coming soon (˶ᵔ ᵕ ᵔ˶)</p>
+          ) : (
+            <div className="service-scroll">
+              {projects.map((proj) => (
+                <div
+                  key={proj.id}
+                  className="service-scroll-card"
+                  onClick={() => setActiveProject(proj)}
+                >
+                  {proj.cover_src ? (
+                    <div className="service-scroll-emoji" style={{ padding: 0 }}>
+                      <img
+                        src={proj.cover_src}
+                        alt={proj.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="service-scroll-emoji">💻</div>
+                  )}
+                  <div className="service-project-info">
+                    <h4>{proj.title} →</h4>
+                    <p>{proj.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 // ── Root ──────────────────────────────────────────────────────────────────────
 // Portfolio is now the main route ("/"), profile card gets its own route
 // ("/profile-card") — same pattern as /admin. Each wrapper just supplies the
@@ -2606,6 +4429,8 @@ export default function App() {
         <Route path="/" element={<PortfolioPage />} />
         <Route path="/profile-card" element={<ProfileCardPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/digital-artist" element={<DigitalArtistPage />} />
+        <Route path="/web-developer" element={<WebDeveloperPage />} />
       </Routes>
     </BrowserRouter>
   );

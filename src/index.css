@@ -1705,6 +1705,15 @@ body {
   padding: 0 50px; /* gutter for arrows — keeps them off the image */
 }
 
+/* ── artwork protection: block long-press save + selection ── */
+.artwork-img,
+.lightbox-img {
+  -webkit-touch-callout: none; /* iOS long-press save menu */
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none; /* clicks pass through to parent */
+}
+
 .lightbox-frame {
   width: 720px;
   height: 480px;
