@@ -5596,8 +5596,30 @@ function WebDeveloperPage() {
 
 // ── Artelier page (hidden route, /artelier) ───────────────────────────────────
 // No links point here — reachable only by typing the URL, same idea as /admin.
-// Will eventually hold the full digital-artist portfolio + TOS + pricing.
+// Front page: big avatar → name → socials (max 3 per row) → 3 nav buttons.
+// Content is database-driven: artelier_profile (id=1), edited via /admin.
 function ArtelierPage() {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("artelier_profile")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      if (error) {
+        console.error("artelier profile load failed:", error);
+        setLoadError(true);
+      } else {
+        setProfile(data);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <div className="page single">
       <div className="browser-frame">
@@ -5609,13 +5631,143 @@ function ArtelierPage() {
           </div>
           <div className="browser-url">@kangkang/artelier</div>
         </div>
+
+        {loadError ? (
+          <div className="section-content">
+            <p className="experience-empty">
+              couldn't load artelier (´•̥ ω •̥`)
+            </p>
+          </div>
+        ) : !profile ? (
+          <div className="section-content">
+            <p className="experience-empty">loading…</p>
+          </div>
+        ) : (
+          <div className="section-content artelier-front">
+            <div className="artelier-avatar">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt={profile.name} />
+              ) : (
+                "🎨"
+              )}
+            </div>
+            <h2 className="section-title artelier-name">
+              <span className="star-prefix">★—</span> {profile.name}
+            </h2>
+            {profile.socials && profile.socials.length > 0 && (
+              <div className="artelier-socials">
+                {profile.socials.map((s, i) => (
+                  <a
+                    key={`${s.label}-${i}`}
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="artelier-social-link"
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            )}
+            <div className="artelier-nav">
+              <button
+                className="btn-gold artelier-nav-btn"
+                onClick={() => navigate("/artelier/gallery")}
+              >
+                ★ gallery
+              </button>
+              <button
+                className="btn-gold artelier-nav-btn"
+                onClick={() => navigate("/artelier/tos")}
+              >
+                ★ terms of service
+              </button>
+              <button
+                className="btn-gold artelier-nav-btn"
+                onClick={() => navigate("/artelier/pricelist")}
+              >
+                ★ pricelist
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Artelier gallery page (/artelier/gallery) ─────────────────────────────────
+// Header + category buttons (from artelier_categories, max 5 per row).
+// Photo grid per category = next stage.
+function ArtelierGalleryPage() {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState(null);
+  const [activeCat, setActiveCat] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("artelier_categories")
+        .select("*")
+        .order("sort_order");
+      if (error) {
+        console.error("artelier categories load failed:", error);
+        setLoadError(true);
+      } else {
+        setCategories(data);
+        if (data.length > 0) setActiveCat(data[0].id);
+      }
+    }
+    load();
+  }, []);
+
+  return (
+    <div className="page single">
+      <div className="browser-frame">
+        <div className="browser-bar">
+          <div className="browser-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
+          </div>
+          <div className="browser-url">@kangkang/artelier/gallery</div>
+          <button className="back-btn" onClick={() => navigate("/artelier")}>
+            ← back
+          </button>
+        </div>
         <div className="section-content">
           <h2 className="section-title">
-            <span className="star-prefix">★—</span> kangkang's artelier
+            <span className="star-prefix">★—</span> gallery
           </h2>
-          <p className="experience-empty">
-            🚧 artelier under construction (˶ᵔ ᵕ ᵔ˶) — tos & pricing coming soon
-          </p>
+
+          {loadError ? (
+            <p className="experience-empty">
+              couldn't load gallery (´•̥ ω •̥`)
+            </p>
+          ) : !categories ? (
+            <p className="experience-empty">loading…</p>
+          ) : categories.length === 0 ? (
+            <p className="experience-empty">
+              🚧 no categories yet (˶ᵔ ᵕ ᵔ˶)
+            </p>
+          ) : (
+            <>
+              <div className="artelier-cat-grid">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`service-tab ${activeCat === cat.id ? "active" : ""}`}
+                    onClick={() => setActiveCat(cat.id)}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+              {/* 🚧 next stage: photo grid ng active category dito */}
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -5648,6 +5800,7 @@ export default function App() {
         <Route path="/digital-artist" element={<DigitalArtistPage />} />
         <Route path="/web-developer" element={<WebDeveloperPage />} />
         <Route path="/artelier" element={<ArtelierPage />} />
+        <Route path="/artelier/gallery" element={<ArtelierGalleryPage />} />
       </Routes>
     </BrowserRouter>
   );

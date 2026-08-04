@@ -2061,3 +2061,108 @@ textarea.browser-url {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ── Artelier front page ─────────────────────────────────────────────── */
+.artelier-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 48px;
+  padding-bottom: 56px;
+}
+
+/* big version ng profile-avatar — same recipe, scaled up.
+   gold is a glow, not an outline… pero avatar ring is the one
+   exception na established na natin sa profile card, so keep. */
+.artelier-avatar {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 4px solid var(--frame-bg);
+  outline: 2px solid var(--gold);
+  box-shadow: 0 0 24px rgba(201, 168, 76, 0.35);
+  background: linear-gradient(135deg, #2a2a2e, #1e1e22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.artelier-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artelier-name {
+  margin-bottom: 14px;
+}
+
+/* max 3 per row: each link ~120px + gaps, container capped so
+   the 4th item has no room and wraps automatically */
+.artelier-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+  max-width: 420px;
+  margin-bottom: 28px;
+}
+
+.artelier-social-link {
+  flex: 0 0 120px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 6px 0;
+  border: 1px solid var(--frame-border);
+  border-radius: 4px;
+  transition: color 0.2s, box-shadow 0.2s;
+}
+
+.artelier-social-link:hover {
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(201, 168, 76, 0.3);
+}
+
+.artelier-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.artelier-nav-btn {
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 12px;
+}
+
+/* ── Artelier gallery: category buttons, exactly 5 per row then wrap ── */
+.artelier-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* service-tab is inline-flex sized by content — inside the grid,
+   stretch it to fill its cell and center the label */
+.artelier-cat-grid .service-tab {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  /* 5 columns on a phone = sardinas; drop to 3 per row */
+  .artelier-cat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
