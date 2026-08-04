@@ -227,6 +227,26 @@ function FloatingDeco() {
   );
 }
 
+// same cover ayos as the profile card tabs — shared ng portfolio sections
+function SectionCover({ coverUrl, heading, desc }) {
+  return (
+    <div
+      className={"profile-cover" + (desc ? " profile-cover--with-desc" : "")}
+      style={coverUrl ? { backgroundImage: `url(${coverUrl})` } : undefined}
+    >
+      <div className="profile-cover-overlay">
+        <div className="profile-cover-text">
+          <h2 className="section-title" style={{ marginBottom: 0 }}>
+            <span className="star-prefix">★—</span> welcome!
+            <br />
+            {heading}
+          </h2>
+          {desc && <p className="hero-desc cover-desc">{desc}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Portfolio sections ────────────────────────────────────────────────────────
 function HomeSection() {
@@ -256,22 +276,15 @@ function HomeSection() {
   if (!home) return <p className="experience-empty">loading…</p>;
 
   return (
-    <div
-      className="section-content hero-bg"
-      style={{ backgroundImage: "url(/frame1.png)" }}
-    >
-      <div className="hero-overlay" />
-      <div className="hero-text">
-        <h1 className="hero-title">
-          <span className="star-prefix">★—</span>welcome!
-          <br />
-          {home.heading_line2}
-        </h1>
-        <p className="hero-desc">{home.hero_desc}</p>
-        <a href={home.resume_url} download className="hero-profile-link">
-          ↓ Download Resume
-        </a>
-      </div>
+    <div className="section-content">
+      <SectionCover
+        coverUrl={home.cover_url}
+        heading={home.heading_line2}
+        desc={home.hero_desc}
+      />
+      <a href={home.resume_url} download className="hero-resume-btn">
+        ↓ Download Resume
+      </a>
     </div>
   );
 }
@@ -322,15 +335,7 @@ function AboutSection() {
 
   return (
     <div className="section-content">
-      <div className="services-hero">
-        <div className="services-hero-placeholder"></div>
-        <div className="services-hero-text">
-          <h2 className="section-title" style={{ marginBottom: 0 }}>
-            <span className="star-prefix">★—</span> welcome!
-            <br />a little about me
-          </h2>
-        </div>
-      </div>
+      <SectionCover coverUrl={content.cover_url} heading="a little about me" />
       {content.quote && <p className="service-quote">"{content.quote}"</p>}
 
       <div className="about-details-card">
@@ -366,6 +371,17 @@ function AboutSection() {
 
 function ServicesSection() {
   const navigate = useNavigate();
+  const [coverUrl, setCoverUrl] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from("services_content")
+      .select("cover_url")
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data?.cover_url) setCoverUrl(data.cover_url);
+      });
+  }, []);
 
   const services = [
     {
@@ -384,16 +400,7 @@ function ServicesSection() {
 
   return (
     <div className="section-content">
-      <div className="services-hero">
-        <div className="services-hero-placeholder"></div>
-        <div className="services-hero-text">
-          <h2 className="section-title" style={{ marginBottom: 0 }}>
-            <span className="star-prefix">★—</span> welcome!
-            <br />
-            here's what I can do
-          </h2>
-        </div>
-      </div>
+      <SectionCover coverUrl={coverUrl} heading="here's what I can do" />
       <p className="service-quote">"Pick a door — art or code, I do both!"</p>
 
       <div className="service-scroll">
@@ -476,16 +483,7 @@ function ContactSection() {
 
   return (
     <div className="section-content">
-      <div className="services-hero">
-        <div className="services-hero-placeholder"></div>
-        <div className="services-hero-text">
-          <h2 className="section-title" style={{ marginBottom: 0 }}>
-            <span className="star-prefix">★—</span> welcome!
-            <br />
-            let's talk!
-          </h2>
-        </div>
-      </div>
+      <SectionCover coverUrl={content.cover_url} heading="let's talk!" />
       {content.quote && <p className="service-quote">"{content.quote}"</p>}
 
       {groups.map((group) => (
@@ -795,7 +793,7 @@ function ProfileTab({ onViewPortfolio }) {
       <div className="profile-header-row">
         <div className="profile-avatar-wrap">
           <div className="profile-avatar">
-            <img src="/kangkang.png" alt="Kangkang" />
+            <img src={profile.avatar_url || "/kangkang.png"} alt="Kangkang" />
           </div>
         </div>
         <div className="profile-header-text">
@@ -1109,6 +1107,25 @@ function ProfileCard({ onViewPortfolio }) {
   const [activeTab, setActiveTab] = useState("profile");
   const [expandedEntry, setExpandedEntry] = useState(null);
   const [previewImg, setPreviewImg] = useState(null);
+  const [covers, setCovers] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from("profile")
+      .select("cover_url, skills_cover_url, experience_cover_url")
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) setCovers(data);
+      });
+  }, []);
+
+  // per-tab cover, may fallback sa main profile cover
+  const coverByTab = {
+    profile: covers?.cover_url,
+    skills: covers?.skills_cover_url || covers?.cover_url,
+    experience: covers?.experience_cover_url || covers?.cover_url,
+  };
+  const coverUrl = coverByTab[activeTab];
   const hasCover =
     activeTab === "profile" ||
     activeTab === "skills" ||
@@ -1316,7 +1333,12 @@ function ProfileCard({ onViewPortfolio }) {
 
         <div className="profile-card-body">
           {hasCover && (
-            <div className="profile-cover">
+            <div
+              className="profile-cover"
+              style={{
+                backgroundImage: `url(${coverUrl || "/frame1.png"})`,
+              }}
+            >
               {coverHeading && (
                 <div className="profile-cover-overlay">
                   <div className="profile-cover-text">
@@ -1363,6 +1385,90 @@ const adminInputStyle = {
   color: "var(--text)",
   fontFamily: "Inter, sans-serif",
 };
+
+// ── reusable per-tab cover uploader — reads/writes one field sa profile row ──
+function AdminTabCover({ field = "cover_url", kind, table = "profile", hint }) {
+  const [row, setRow] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    supabase
+      .from(table)
+      .select(`id, ${field}`)
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setRow(data);
+      });
+  }, [field, table]);
+
+  const handleChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // para pwede ulit i-select yung same file
+    if (!file || !row) return;
+    setMsg(null);
+    const oldUrl = row[field];
+    try {
+      const path = `${kind}/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage
+        .from("profile-images")
+        .upload(path, file);
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage
+        .from("profile-images")
+        .getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error } = await supabase
+        .from(table)
+        .update({ [field]: url })
+        .eq("id", row.id);
+      if (error) throw error;
+      setRow((r) => ({ ...r, [field]: url }));
+      // cleanup: burahin yung old file para hindi mag-ipon ng basura
+      if (oldUrl && oldUrl.includes("/profile-images/")) {
+        const oldPath = oldUrl.split("/profile-images/")[1];
+        await supabase.storage.from("profile-images").remove([oldPath]);
+      }
+      setMsg({
+        ok: true,
+        text: "cover updated ✦ refresh the public page to see it",
+      });
+    } catch (err) {
+      setMsg({ ok: false, text: `upload failed: ${err.message}` });
+    }
+  };
+
+  return (
+    <div className="admin-tab-cover" style={{ marginBottom: "16px" }}>
+      <div
+        className="profile-cover admin-cover-preview"
+        style={{
+          backgroundImage: `url(${row?.[field] || "/frame1.png"})`,
+        }}
+        onClick={() => inputRef.current?.click()}
+      />
+      <p className="admin-upload-hint">
+        click the cover to change it ✦{" "}
+        {hint || "recommended 1400 × 350px (wide landscape)"}
+      </p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleChange}
+      />
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{ color: msg.ok ? "var(--gold)" : "#e05d5d" }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function AdminSkills() {
   const [categories, setCategories] = useState(null);
@@ -1474,6 +1580,7 @@ function AdminSkills() {
 
   return (
     <>
+      <AdminTabCover field="skills_cover_url" kind="skills-cover" />
       <div className="profile-about-label" style={{ marginTop: "20px" }}>
         <span>SKILLS</span>
       </div>
@@ -1811,6 +1918,7 @@ function AdminAbout() {
 
   return (
     <>
+      <AdminTabCover table="about_content" kind="about-cover" />
       <div className="profile-about-label" style={{ marginTop: "20px" }}>
         <span>ABOUT ME</span>
       </div>
@@ -2243,250 +2351,277 @@ setSaving(false);
       </div>
 
       <div className="skills-panel">
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">project title</div>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. kangkang-portfolio"
-            className="browser-url"
-            style={adminInputStyle}
-          />
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">subtitle</div>
-          <input
-            value={sub}
-            onChange={(e) => setSub(e.target.value)}
-            placeholder="e.g. personal portfolio · react.js · vercel"
-            className="browser-url"
-            style={adminInputStyle}
-          />
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">description</div>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="browser-url"
-            style={{ ...adminInputStyle, resize: "vertical", lineHeight: 1.6 }}
-          />
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">
-            tools used (comma-separated)
+        <div className="admin-exp-grid">
+          <div className="admin-col-form">
+            <div
+              className="screenshot-gallery-label"
+              style={{ marginBottom: "10px" }}
+            >
+              ✦ add new project
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">project title</div>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. kangkang-portfolio"
+                className="browser-url"
+                style={adminInputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">subtitle</div>
+              <input
+                value={sub}
+                onChange={(e) => setSub(e.target.value)}
+                placeholder="e.g. personal portfolio · react.js · vercel"
+                className="browser-url"
+                style={adminInputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">description</div>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="browser-url"
+                style={{
+                  ...adminInputStyle,
+                  resize: "vertical",
+                  lineHeight: 1.6,
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">
+                tools used (comma-separated)
+              </div>
+              <input
+                value={toolsText}
+                onChange={(e) => setToolsText(e.target.value)}
+                placeholder="e.g. React, CSS, Vercel, GitHub"
+                className="browser-url"
+                style={adminInputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">
+                live link (optional)
+              </div>
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://…"
+                className="browser-url"
+                style={adminInputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div className="screenshot-gallery-label">cover photo</div>
+              <input
+                key={`cover-${formVersion}`}
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCoverFile(e.target.files[0] || null)}
+              />
+            </div>
+            <div style={{ marginBottom: "10px" }}>
+              <div className="screenshot-gallery-label">screenshots</div>
+              <input
+                key={`shots-${formVersion}`}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setShotFiles(Array.from(e.target.files))}
+              />
+              {shotFiles.length > 0 && (
+                <p className="experience-teaser">
+                  {shotFiles.length} screenshot(s) ready to upload on save
+                </p>
+              )}
+            </div>
+
+            {editingId && (
+              <p className="experience-teaser" style={{ color: "var(--gold)" }}>
+                ✎ editing "{projects.find((p) => p.id === editingId)?.title}"
+              </p>
+            )}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                className="btn-gold"
+                style={{ flex: 1 }}
+                onClick={saveProject}
+                disabled={saving}
+              >
+                {saving
+                  ? "saving…"
+                  : editingId
+                    ? "✦ save changes ✦"
+                    : "✦ add project ✦"}
+              </button>
+              {editingId && (
+                <button type="button" className="back-btn" onClick={cancelEdit}>
+                  cancel
+                </button>
+              )}
+            </div>
           </div>
-          <input
-            value={toolsText}
-            onChange={(e) => setToolsText(e.target.value)}
-            placeholder="e.g. React, CSS, Vercel, GitHub"
-            className="browser-url"
-            style={adminInputStyle}
-          />
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">live link (optional)</div>
-          <input
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="https://…"
-            className="browser-url"
-            style={adminInputStyle}
-          />
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <div className="screenshot-gallery-label">cover photo</div>
-          <input
-            key={`cover-${formVersion}`}
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files[0] || null)}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <div className="screenshot-gallery-label">screenshots</div>
-          <input
-            key={`shots-${formVersion}`}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => setShotFiles(Array.from(e.target.files))}
-          />
-          {shotFiles.length > 0 && (
-            <p className="experience-teaser">
-              {shotFiles.length} screenshot(s) ready to upload on save
-            </p>
-          )}
-        </div>
 
-        {editingId && (
-          <p className="experience-teaser" style={{ color: "var(--gold)" }}>
-            ✎ editing "{projects.find((p) => p.id === editingId)?.title}"
-          </p>
-        )}
-        <div style={{ display: "flex", gap: "6px" }}>
-          <button
-            type="button"
-            className="btn-gold"
-            style={{ flex: 1 }}
-            onClick={saveProject}
-            disabled={saving}
-          >
-            {saving
-              ? "saving…"
-              : editingId
-                ? "✦ save changes ✦"
-                : "✦ add project ✦"}
-          </button>
-          {editingId && (
-            <button type="button" className="back-btn" onClick={cancelEdit}>
-              cancel
-            </button>
-          )}
-        </div>
-
-        {projects.length > 0 && (
-          <div style={{ marginTop: "14px" }}>
-            {projects.map((proj) => {
-              const isOpen = expandedId === proj.id;
-              return (
-                <div
-                  key={proj.id}
-                  className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
-                  style={{ marginBottom: "6px" }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "8px",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="skills-toggle"
-                      style={{ width: "auto", flex: 1 }}
-                      onClick={() => setExpandedId(isOpen ? null : proj.id)}
+          <div className="admin-col-saved">
+            <div
+              className="screenshot-gallery-label"
+              style={{ marginBottom: "10px" }}
+            >
+              ✦ saved projects
+            </div>
+            {projects.length === 0 && (
+              <p className="experience-empty">no projects yet ✦</p>
+            )}
+            {projects.length > 0 && (
+              <div>
+                {projects.map((proj) => {
+                  const isOpen = expandedId === proj.id;
+                  return (
+                    <div
+                      key={proj.id}
+                      className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+                      style={{ marginBottom: "6px" }}
                     >
-                      <span
-                        className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
-                      >
-                        ▸
-                      </span>
-                      <span
+                      <div
                         style={{
                           display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "8px",
                         }}
                       >
-                        <span className="profile-intern-role">
-                          {proj.title}
-                        </span>
-                        <span className="profile-intern-company">
-                          {proj.sub}
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="back-btn"
-                      onClick={() => startEdit(proj)}
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      className="back-btn"
-                      onClick={() => deleteProject(proj)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  {isOpen && (
-                    <div className="nested-skills">
-                      {proj.tools && proj.tools.length > 0 && (
-                        <p className="skill-text-list skill-text-list--muted">
-                          {proj.tools.join(" • ")}
-                        </p>
-                      )}
-
-                      <div
-                        className="screenshot-gallery-label"
-                        style={{ marginTop: "10px" }}
-                      >
-                        cover
-                      </div>
-                      {proj.cover_src ? (
-                        <div
-                          className="screenshot-thumb"
-                          style={{ width: "120px" }}
+                        <button
+                          type="button"
+                          className="skills-toggle"
+                          style={{ width: "auto", flex: 1 }}
+                          onClick={() => setExpandedId(isOpen ? null : proj.id)}
                         >
-                          <img src={proj.cover_src} alt="cover" />
-                        </div>
-                      ) : (
-                        <p className="experience-teaser">no cover yet</p>
-                      )}
-
-                      <div
-                        className="screenshot-gallery-label"
-                        style={{ marginTop: "12px" }}
-                      >
-                        screenshots
+                          <span
+                            className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                          >
+                            ▸
+                          </span>
+                          <span
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-start",
+                            }}
+                          >
+                            <span className="profile-intern-role">
+                              {proj.title}
+                            </span>
+                            <span className="profile-intern-company">
+                              {proj.sub}
+                            </span>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="back-btn"
+                          onClick={() => startEdit(proj)}
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          className="back-btn"
+                          onClick={() => deleteProject(proj)}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      {proj.screenshots && proj.screenshots.length > 0 && (
-                        <div className="screenshot-grid">
-                          {proj.screenshots.map((shot) => (
+
+                      {isOpen && (
+                        <div className="nested-skills">
+                          {proj.tools && proj.tools.length > 0 && (
+                            <p className="skill-text-list skill-text-list--muted">
+                              {proj.tools.join(" • ")}
+                            </p>
+                          )}
+
+                          <div
+                            className="screenshot-gallery-label"
+                            style={{ marginTop: "10px" }}
+                          >
+                            cover
+                          </div>
+                          {proj.cover_src ? (
                             <div
-                              key={shot.path}
-                              style={{ position: "relative" }}
+                              className="screenshot-thumb"
+                              style={{ width: "120px" }}
                             >
-                              <div className="screenshot-thumb">
-                                <img src={shot.src} alt={shot.label} />
-                              </div>
-                              <button
-                                type="button"
-                                className="back-btn"
-                                style={{
-                                  position: "absolute",
-                                  top: "2px",
-                                  right: "2px",
-                                  background: "rgba(0,0,0,0.6)",
-                                }}
-                                onClick={() => removeShot(proj, shot)}
-                              >
-                                ✕
-                              </button>
+                              <img src={proj.cover_src} alt="cover" />
                             </div>
-                          ))}
+                          ) : (
+                            <p className="experience-teaser">no cover yet</p>
+                          )}
+
+                          <div
+                            className="screenshot-gallery-label"
+                            style={{ marginTop: "12px" }}
+                          >
+                            screenshots
+                          </div>
+                          {proj.screenshots && proj.screenshots.length > 0 && (
+                            <div className="screenshot-grid">
+                              {proj.screenshots.map((shot) => (
+                                <div
+                                  key={shot.path}
+                                  style={{ position: "relative" }}
+                                >
+                                  <div className="screenshot-thumb">
+                                    <img src={shot.src} alt={shot.label} />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="back-btn"
+                                    style={{
+                                      position: "absolute",
+                                      top: "2px",
+                                      right: "2px",
+                                      background: "rgba(0,0,0,0.6)",
+                                    }}
+                                    onClick={() => removeShot(proj, shot)}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={uploadingId === proj.id}
+                            onChange={(ev) => {
+                              const files = Array.from(ev.target.files);
+                              if (files.length > 0)
+                                addShotsToProject(proj, files);
+                              ev.target.value = "";
+                            }}
+                            style={{ marginTop: "8px" }}
+                          />
+                          {uploadingId === proj.id && (
+                            <p className="experience-teaser">uploading…</p>
+                          )}
                         </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        disabled={uploadingId === proj.id}
-                        onChange={(ev) => {
-                          const files = Array.from(ev.target.files);
-                          if (files.length > 0)
-                            addShotsToProject(proj, files);
-                          ev.target.value = "";
-                        }}
-                        style={{ marginTop: "8px" }}
-                      />
-                      {uploadingId === proj.id && (
-                        <p className="experience-teaser">uploading…</p>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {msg && (
@@ -2519,6 +2654,8 @@ function AdminContact() {
   });
   const [msg, setMsg] = useState(null);
   const [savingQuote, setSavingQuote] = useState(false);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editItemForm, setEditItemForm] = useState(null);
 
   useEffect(() => {
     async function loadAll() {
@@ -2542,6 +2679,8 @@ function AdminContact() {
   const toggleGroup = (id) => {
     setOpenGroup((prev) => (prev === id ? null : id));
     setNewItem({ icon: "", label: "", url: "", line_group: "0" });
+    setEditingItemId(null);
+    setEditItemForm(null);
   };
 
   const saveQuote = async () => {
@@ -2640,11 +2779,52 @@ function AdminContact() {
     setMsg({ ok: true, text: `deleted "${item.label}"` });
   };
 
+  const startEditItem = (item) => {
+    setEditingItemId(item.id);
+    setEditItemForm({
+      icon: item.icon || "",
+      label: item.label,
+      url: item.url,
+      line_group: String(item.line_group),
+    });
+  };
+
+  const cancelEditItem = () => {
+    setEditingItemId(null);
+    setEditItemForm(null);
+  };
+
+  const saveEditItem = async (item) => {
+    const label = editItemForm.label.trim();
+    const url = editItemForm.url.trim();
+    if (!label || !url) {
+      setMsg({ ok: false, text: "label and url are required!" });
+      return;
+    }
+    const updates = {
+      icon: editItemForm.icon.trim(),
+      label,
+      url,
+      line_group: parseInt(editItemForm.line_group, 10) || 0,
+    };
+    const { error } = await supabase
+      .from("contact_items")
+      .update(updates)
+      .eq("id", item.id);
+    if (error) return showError(error);
+    setItems((prev) =>
+      prev.map((i) => (i.id === item.id ? { ...i, ...updates } : i)),
+    );
+    cancelEditItem();
+    setMsg({ ok: true, text: `updated "${label}" ✦` });
+  };
+
   if (!content || !groups || !items)
     return <p className="experience-empty">loading contact content…</p>;
 
   return (
     <>
+      <AdminTabCover table="contact_content" kind="contact-cover" />
       <div className="profile-about-label" style={{ marginTop: "20px" }}>
         <span>GET IN TOUCH</span>
       </div>
@@ -2714,36 +2894,133 @@ function AdminContact() {
 
               {isOpen && (
                 <div className="nested-skills">
-                  {groupItems.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "8px",
-                      }}
-                    >
-                      <span className="skill-text-list skill-text-list--muted">
-                        <span style={{ color: "var(--gold)" }}>
-                          {item.icon}
-                        </span>{" "}
-                        {item.label}
-                        <span
-                          style={{ fontSize: "9px", marginLeft: "6px" }}
-                        >
-                          (line {item.line_group})
-                        </span>
-                      </span>
-                      <button
-                        type="button"
-                        className="back-btn"
-                        onClick={() => deleteItem(item)}
+                  {groupItems.map((item) =>
+                    editingItemId === item.id ? (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px",
+                          margin: "6px 0",
+                          paddingBottom: "8px",
+                          borderBottom: "1px dashed var(--frame-border)",
+                        }}
                       >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <input
+                            value={editItemForm.icon}
+                            onChange={(e) =>
+                              setEditItemForm((p) => ({
+                                ...p,
+                                icon: e.target.value,
+                              }))
+                            }
+                            placeholder="icon"
+                            className="browser-url"
+                            style={{ ...adminInputStyle, width: "60px" }}
+                          />
+                          <input
+                            value={editItemForm.label}
+                            onChange={(e) =>
+                              setEditItemForm((p) => ({
+                                ...p,
+                                label: e.target.value,
+                              }))
+                            }
+                            placeholder="label (visible text)…"
+                            className="browser-url"
+                            style={adminInputStyle}
+                          />
+                        </div>
+                        <input
+                          value={editItemForm.url}
+                          onChange={(e) =>
+                            setEditItemForm((p) => ({
+                              ...p,
+                              url: e.target.value,
+                            }))
+                          }
+                          placeholder="url (mailto: or https://)…"
+                          className="browser-url"
+                          style={adminInputStyle}
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "6px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span className="screenshot-gallery-label">
+                            line #
+                          </span>
+                          <input
+                            value={editItemForm.line_group}
+                            onChange={(e) =>
+                              setEditItemForm((p) => ({
+                                ...p,
+                                line_group: e.target.value,
+                              }))
+                            }
+                            className="browser-url"
+                            style={{ ...adminInputStyle, width: "60px" }}
+                          />
+                          <button
+                            type="button"
+                            className="back-btn"
+                            style={{ marginLeft: "auto" }}
+                            onClick={cancelEditItem}
+                          >
+                            cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-gold"
+                            onClick={() => saveEditItem(item)}
+                          >
+                            ✦ save ✦
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "8px",
+                        }}
+                      >
+                        <span className="skill-text-list skill-text-list--muted">
+                          <span style={{ color: "var(--gold)" }}>
+                            {item.icon}
+                          </span>{" "}
+                          {item.label}
+                          <span style={{ fontSize: "9px", marginLeft: "6px" }}>
+                            (line {item.line_group})
+                          </span>
+                        </span>
+                        <span style={{ display: "flex", gap: "4px" }}>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            onClick={() => startEditItem(item)}
+                          >
+                            ✎
+                          </button>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            onClick={() => deleteItem(item)}
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      </div>
+                    ),
+                  )}
 
                   {/* add item — mini stack */}
                   <div
@@ -2790,9 +3067,7 @@ function AdminContact() {
                         alignItems: "center",
                       }}
                     >
-                      <span className="screenshot-gallery-label">
-                        line #
-                      </span>
+                      <span className="screenshot-gallery-label">line #</span>
                       <input
                         value={newItem.line_group}
                         onChange={(e) =>
@@ -2912,6 +3187,7 @@ const [uploadingResume, setUploadingResume] = useState(false);
 
   return (
     <>
+      <AdminTabCover table="home_content" kind="home-cover" />
       <div className="profile-about-label" style={{ marginTop: "20px" }}>
         <span>HOME</span>
       </div>
@@ -2993,6 +3269,11 @@ const [uploadingResume, setUploadingResume] = useState(false);
 // ── Bullet list with Enter-to-add / Backspace-to-remove ───────────────────────
 function BulletInputs({ bullets, setBullets }) {
   const refs = useRef([]);
+  const autoGrow = (el) => {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  };
 
   const focusBullet = (i) => {
     // wait for React to render the new input, then focus it
@@ -3028,17 +3309,29 @@ function BulletInputs({ bullets, setBullets }) {
       {bullets.map((b, i) => (
         <div
           key={i}
-          style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}
         >
           <span style={{ color: "var(--gold)", fontSize: "8px" }}>✦</span>
-          <input
-            ref={(el) => (refs.current[i] = el)}
+          <textarea
+            ref={(el) => {
+              refs.current[i] = el;
+              autoGrow(el);
+            }}
             value={b}
-            onChange={(e) => updateBullet(i, e.target.value)}
+            rows={1}
+            onChange={(e) => {
+              updateBullet(i, e.target.value);
+              autoGrow(e.target);
+            }}
             onKeyDown={(e) => handleKeyDown(e, i)}
             placeholder="type a bullet, press Enter for the next…"
             className="browser-url"
-            style={adminInputStyle}
+            style={{
+              ...adminInputStyle,
+              resize: "none",
+              overflow: "hidden",
+              lineHeight: 1.6,
+            }}
           />
           {bullets.length > 1 && (
             <button
@@ -3070,6 +3363,8 @@ function AdminExperience() {
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [uploadingId, setUploadingId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -3160,6 +3455,47 @@ function AdminExperience() {
     setMsg({ ok: true, text: `deleted "${entry.role}"` });
   };
 
+  const startEdit = (entry) => {
+    setEditingId(entry.id);
+    setEditForm({
+      role: entry.role,
+      company: entry.company,
+      period: entry.period || "",
+      bullets:
+        entry.points && entry.points.length > 0 ? [...entry.points] : [""],
+    });
+    setExpandedId(entry.id); // auto-expand pag nag-edit
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm(null);
+  };
+
+  const saveEdit = async (entry) => {
+    const cleanBullets = editForm.bullets.map((b) => b.trim()).filter(Boolean);
+    if (!editForm.role.trim() || !editForm.company.trim()) {
+      setMsg({ ok: false, text: "position and company are required!" });
+      return;
+    }
+    const fields = {
+      role: editForm.role.trim(),
+      company: editForm.company.trim(),
+      period: editForm.period.trim(),
+      points: cleanBullets,
+    };
+    const { error } = await supabase
+      .from("experience")
+      .update(fields)
+      .eq("id", entry.id);
+    if (error) return showError(error);
+    setEntries((prev) =>
+      prev.map((e) => (e.id === entry.id ? { ...e, ...fields } : e)),
+    );
+    cancelEdit();
+    setMsg({ ok: true, text: `updated "${fields.role}" ✦` });
+  };
+
   const addPhotosToEntry = async (entry, files) => {
     setUploadingId(entry.id);
     try {
@@ -3209,6 +3545,7 @@ function AdminExperience() {
 
   return (
     <>
+      <AdminTabCover field="experience_cover_url" kind="experience-cover" />
       <div className="profile-about-label" style={{ marginTop: "20px" }}>
         <span>EXPERIENCE</span>
       </div>
@@ -3228,179 +3565,276 @@ function AdminExperience() {
         </div>
 
         <div className="skills-panel">
-          {/* the form */}
-          <div style={{ marginBottom: "8px" }}>
-            <div className="screenshot-gallery-label">position</div>
-            <input
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="e.g. Web Developer Intern"
-              className="browser-url"
-              style={adminInputStyle}
-            />
-          </div>
-          <div style={{ marginBottom: "8px" }}>
-            <div className="screenshot-gallery-label">company</div>
-            <input
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              placeholder="e.g. Urban Travellers Hotel"
-              className="browser-url"
-              style={adminInputStyle}
-            />
-          </div>
-          <div style={{ marginBottom: "8px" }}>
-            <div className="screenshot-gallery-label">date &amp; hours</div>
-            <input
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              placeholder="e.g. Feb 2026 – May 2026 (300 hours)"
-              className="browser-url"
-              style={adminInputStyle}
-            />
-          </div>
-          <div style={{ marginBottom: "10px" }}>
-            <div className="screenshot-gallery-label">bullet points</div>
-            <BulletInputs bullets={bullets} setBullets={setBullets} />
-          </div>
-          <div style={{ marginBottom: "10px" }}>
-            <div className="screenshot-gallery-label">photos (optional)</div>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => setNewPhotos(Array.from(e.target.files))}
-            />
-            {newPhotos.length > 0 && (
-              <p className="experience-teaser">
-                {newPhotos.length} photo(s) ready to upload on save
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            className="btn-gold"
-            style={{ width: "100%" }}
-            onClick={addEntry}
-            disabled={saving}
-          >
-            {saving ? "saving…" : `✦ add ${category} ✦`}
-          </button>
+          <div className="admin-exp-grid">
+            {/* left column — add new */}
+            <div>
+              <div
+                className="screenshot-gallery-label"
+                style={{ marginBottom: "10px" }}
+              >
+                ✦ add new {category}
+              </div>
+              {/* the form */}
+              <div style={{ marginBottom: "8px" }}>
+                <div className="screenshot-gallery-label">position</div>
+                <input
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Web Developer Intern"
+                  className="browser-url"
+                  style={adminInputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <div className="screenshot-gallery-label">company</div>
+                <input
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="e.g. Urban Travellers Hotel"
+                  className="browser-url"
+                  style={adminInputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <div className="screenshot-gallery-label">date &amp; hours</div>
+                <input
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  placeholder="e.g. Feb 2026 – May 2026 (300 hours)"
+                  className="browser-url"
+                  style={adminInputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <div className="screenshot-gallery-label">bullet points</div>
+                <BulletInputs bullets={bullets} setBullets={setBullets} />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <div className="screenshot-gallery-label">
+                  photos (optional)
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setNewPhotos(Array.from(e.target.files))}
+                />
+                {newPhotos.length > 0 && (
+                  <p className="experience-teaser">
+                    {newPhotos.length} photo(s) ready to upload on save
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn-gold"
+                style={{ width: "100%" }}
+                onClick={addEntry}
+                disabled={saving}
+              >
+                {saving ? "saving…" : `✦ add ${category} ✦`}
+              </button>
+            </div>
 
-          {/* existing entries */}
-          {shown.length > 0 && (
-            <div style={{ marginTop: "14px" }}>
-              {shown.map((e) => {
-                const isOpen = expandedId === e.id;
-                return (
-                  <div
-                    key={e.id}
-                    className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
-                    style={{ marginBottom: "6px" }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "8px",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="skills-toggle"
-                        style={{ width: "auto", flex: 1 }}
-                        onClick={() => setExpandedId(isOpen ? null : e.id)}
+            {/* right column — saved entries */}
+            <div>
+              <div
+                className="screenshot-gallery-label"
+                style={{ marginBottom: "10px" }}
+              >
+                ✦ saved entries
+              </div>
+              {shown.length === 0 && (
+                <p className="experience-empty">no {category} entries yet ✦</p>
+              )}
+              {shown.length > 0 && (
+                <div>
+                  {shown.map((e) => {
+                    const isOpen = expandedId === e.id;
+                    return (
+                      <div
+                        key={e.id}
+                        className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+                        style={{ marginBottom: "6px" }}
                       >
-                        <span
-                          className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
-                        >
-                          ▸
-                        </span>
-                        <span
+                        <div
                           style={{
                             display: "flex",
-                            flexDirection: "column",
-                            alignItems: "flex-start",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px",
                           }}
                         >
-                          <span className="profile-intern-role">{e.role}</span>
-                          <span className="profile-intern-company">
-                            {e.company}
-                          </span>
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        className="back-btn"
-                        onClick={() => deleteEntry(e)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    {isOpen && (
-                      <div className="nested-skills">
-                        <div className="profile-intern-period">{e.period}</div>
-                        <ul className="profile-intern-points">
-                          {(e.points || []).map((p, i) => (
-                            <li key={i}>{p}</li>
-                          ))}
-                        </ul>
-
-                        <div
-                          className="screenshot-gallery-label"
-                          style={{ marginTop: "12px" }}
-                        >
-                          photos
+                          <button
+                            type="button"
+                            className="skills-toggle"
+                            style={{ width: "auto", flex: 1 }}
+                            onClick={() => setExpandedId(isOpen ? null : e.id)}
+                          >
+                            <span
+                              className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}
+                            >
+                              ▸
+                            </span>
+                            <span
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              <span className="profile-intern-role">
+                                {e.role}
+                              </span>
+                              <span className="profile-intern-company">
+                                {e.company}
+                              </span>
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            onClick={() =>
+                              editingId === e.id ? cancelEdit() : startEdit(e)
+                            }
+                          >
+                            {editingId === e.id ? "cancel" : "✎"}
+                          </button>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            onClick={() => deleteEntry(e)}
+                          >
+                            ✕
+                          </button>
                         </div>
-                        {e.screenshots && e.screenshots.length > 0 && (
-                          <div className="screenshot-grid">
-                            {e.screenshots.map((photo) => (
-                              <div
-                                key={photo.path}
-                                style={{ position: "relative" }}
-                              >
-                                <div className="screenshot-thumb">
-                                  <img src={photo.src} alt={photo.label} />
+
+                        {isOpen && (
+                          <div className="nested-skills">
+                            {editingId === e.id ? (
+                              <>
+                                {[
+                                  ["role", "position"],
+                                  ["company", "company"],
+                                  ["period", "date & hours"],
+                                ].map(([field, label]) => (
+                                  <div
+                                    key={field}
+                                    style={{ marginBottom: "8px" }}
+                                  >
+                                    <div className="screenshot-gallery-label">
+                                      {label}
+                                    </div>
+                                    <input
+                                      value={editForm[field]}
+                                      onChange={(ev) =>
+                                        setEditForm((f) => ({
+                                          ...f,
+                                          [field]: ev.target.value,
+                                        }))
+                                      }
+                                      className="browser-url"
+                                      style={adminInputStyle}
+                                    />
+                                  </div>
+                                ))}
+                                <div style={{ marginBottom: "10px" }}>
+                                  <div className="screenshot-gallery-label">
+                                    bullet points
+                                  </div>
+                                  <BulletInputs
+                                    bullets={editForm.bullets}
+                                    setBullets={(updater) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        bullets:
+                                          typeof updater === "function"
+                                            ? updater(f.bullets)
+                                            : updater,
+                                      }))
+                                    }
+                                  />
                                 </div>
                                 <button
                                   type="button"
-                                  className="back-btn"
+                                  className="btn-gold"
                                   style={{
-                                    position: "absolute",
-                                    top: "2px",
-                                    right: "2px",
-                                    background: "rgba(0,0,0,0.6)",
+                                    width: "100%",
+                                    marginBottom: "10px",
                                   }}
-                                  onClick={() => removePhoto(e, photo)}
+                                  onClick={() => saveEdit(e)}
                                 >
-                                  ✕
+                                  ✦ save changes ✦
                                 </button>
+                              </>
+                            ) : (
+                              <>
+                                <div className="profile-intern-period">
+                                  {e.period}
+                                </div>
+                                <ul className="profile-intern-points">
+                                  {(e.points || []).map((p, i) => (
+                                    <li key={i}>{p}</li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
+
+                            <div
+                              className="screenshot-gallery-label"
+                              style={{ marginTop: "12px" }}
+                            >
+                              photos
+                            </div>
+                            {e.screenshots && e.screenshots.length > 0 && (
+                              <div className="screenshot-grid">
+                                {e.screenshots.map((photo) => (
+                                  <div
+                                    key={photo.path}
+                                    style={{ position: "relative" }}
+                                  >
+                                    <div className="screenshot-thumb">
+                                      <img src={photo.src} alt={photo.label} />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className="back-btn"
+                                      style={{
+                                        position: "absolute",
+                                        top: "2px",
+                                        right: "2px",
+                                        background: "rgba(0,0,0,0.6)",
+                                      }}
+                                      onClick={() => removePhoto(e, photo)}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              disabled={uploadingId === e.id}
+                              onChange={(ev) =>
+                                addPhotosToEntry(e, Array.from(ev.target.files))
+                              }
+                              style={{ marginTop: "8px" }}
+                            />
+                            {uploadingId === e.id && (
+                              <p className="experience-teaser">uploading…</p>
+                            )}
                           </div>
                         )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          disabled={uploadingId === e.id}
-                          onChange={(ev) =>
-                            addPhotosToEntry(e, Array.from(ev.target.files))
-                          }
-                          style={{ marginTop: "8px" }}
-                        />
-                        {uploadingId === e.id && (
-                          <p className="experience-teaser">uploading…</p>
-                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -3675,6 +4109,649 @@ function AdminArtworks() {
   );
 }
 
+// ── Admin: artelier manager ───────────────────────────────────────────────────
+const ARTELIER_SECTIONS = ["gallery", "terms of services", "pricing"];
+
+function AdminArtelier() {
+  const [profile, setProfile] = useState(null);
+  const [activeSection, setActiveSection] = useState("gallery");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const avatarInputRef = useRef(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("artelier_profile")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      if (!error) setProfile(data);
+    }
+    load();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const uploadAvatar = async (file) => {
+    if (!file) return;
+    setSaving(true);
+    try {
+      const path = `profile/${Date.now()}-avatar`;
+      const { error: upErr } = await supabase.storage
+        .from("artelier")
+        .upload(path, file);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage
+        .from("artelier")
+        .getPublicUrl(path);
+      const { error } = await supabase
+        .from("artelier_profile")
+        .update({ avatar_url: urlData.publicUrl })
+        .eq("id", 1);
+      if (error) throw error;
+      setProfile((p) => ({ ...p, avatar_url: urlData.publicUrl }));
+      setMsg({ ok: true, text: "profile photo updated ✦" });
+    } catch (error) {
+      showError(error);
+    }
+    setSaving(false);
+  };
+
+  const updateSocial = (i, field, value) =>
+    setProfile((p) => ({
+      ...p,
+      socials: p.socials.map((s, idx) =>
+        idx === i ? { ...s, [field]: value } : s,
+      ),
+    }));
+
+  const addSocial = () =>
+    setProfile((p) => ({ ...p, socials: [...p.socials, { label: "", url: "" }] }));
+
+  const removeSocial = (i) =>
+    setProfile((p) => ({
+      ...p,
+      socials: p.socials.filter((_, idx) => idx !== i),
+    }));
+
+  const saveProfile = async () => {
+    setSaving(true);
+    const cleanSocials = profile.socials.filter(
+      (s) => s.label.trim() || s.url.trim(),
+    );
+    const { error } = await supabase
+      .from("artelier_profile")
+      .update({ name: profile.name.trim(), socials: cleanSocials })
+      .eq("id", 1);
+    setSaving(false);
+    if (error) return showError(error);
+    setProfile((p) => ({ ...p, socials: cleanSocials }));
+    setMsg({ ok: true, text: "artelier profile saved ✦" });
+  };
+
+  if (!profile) return <p className="experience-empty">loading artelier…</p>;
+
+  return (
+    <>
+      <div className="profile-about-label">
+        <span>ARTELIER — PROFILE</span>
+      </div>
+
+      {/* profile row: photo + name/socials beside it */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "14px",
+          marginTop: "10px",
+        }}
+      >
+        <div
+          className="profile-avatar admin-avatar-preview"
+          style={{ flexShrink: 0 }}
+          onClick={() => avatarInputRef.current?.click()}
+        >
+          <img
+            src={profile.avatar_url || "/kangkang.png"}
+            alt="artelier avatar preview"
+          />
+        </div>
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            uploadAvatar(e.target.files[0]);
+            e.target.value = "";
+          }}
+        />
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="screenshot-gallery-label">name</div>
+          <input
+            value={profile.name}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, name: e.target.value }))
+            }
+            className="browser-url"
+            style={adminInputStyle}
+          />
+
+          <div className="screenshot-gallery-label" style={{ marginTop: "8px" }}>
+            socials
+          </div>
+          {profile.socials.map((s, i) => (
+            <div
+              key={i}
+              style={{ display: "flex", gap: "6px", marginBottom: "6px" }}
+            >
+              <input
+                value={s.label}
+                onChange={(e) => updateSocial(i, "label", e.target.value)}
+                placeholder="label (e.g. instagram)"
+                className="browser-url"
+                style={{ ...adminInputStyle, flex: "0 0 35%" }}
+              />
+              <input
+                value={s.url}
+                onChange={(e) => updateSocial(i, "url", e.target.value)}
+                placeholder="https://…"
+                className="browser-url"
+                style={adminInputStyle}
+              />
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => removeSocial(i)}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+            <button type="button" className="back-btn" onClick={addSocial}>
+              + add social
+            </button>
+            <button
+              type="button"
+              className="btn-gold"
+              disabled={saving}
+              onClick={saveProfile}
+            >
+              {saving ? "saving…" : "✦ save profile ✦"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{ color: msg.ok ? "var(--gold)" : "#ff5f57", marginTop: "10px" }}
+        >
+          {msg.text}
+        </p>
+      )}
+
+      {/* section tabs: gallery / tos / pricing */}
+      <div className="service-tabs" style={{ margin: "18px 0 10px" }}>
+        {ARTELIER_SECTIONS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`service-tab ${activeSection === s ? "active" : ""}`}
+            onClick={() => setActiveSection(s)}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {activeSection === "gallery" ? (
+        <AdminArtelierGallery />
+      ) : activeSection === "terms of services" ? (
+        <AdminArtelierTos />
+      ) : (
+        <p className="experience-empty">
+          🚧 pricing editor coming soon (˶ᵔ ᵕ ᵔ˶)
+        </p>
+      )}
+    </>
+  );
+}
+
+// ── Admin: artelier gallery (categories + photos, no filenames shown) ────────
+function AdminArtelierGallery() {
+  const [categories, setCategories] = useState(null);
+  const [photos, setPhotos] = useState(null);
+  const [openCategory, setOpenCategory] = useState(null);
+  const [newCatLabel, setNewCatLabel] = useState("");
+  const [uploadingId, setUploadingId] = useState(null);
+  const [msg, setMsg] = useState(null);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    async function loadAll() {
+      const [catRes, photoRes] = await Promise.all([
+        supabase.from("artelier_categories").select("*").order("sort_order"),
+        supabase.from("artelier_photos").select("*").order("sort_order"),
+      ]);
+      if (!catRes.error && !photoRes.error) {
+        setCategories(catRes.data);
+        setPhotos(photoRes.data);
+      }
+    }
+    loadAll();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const addCategory = async () => {
+    const label = newCatLabel.trim();
+    if (!label) return;
+    const nextOrder =
+      categories.length > 0
+        ? Math.max(...categories.map((c) => c.sort_order)) + 1
+        : 0;
+    const { data, error } = await supabase
+      .from("artelier_categories")
+      .insert({ label, sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setCategories((prev) => [...prev, data]);
+    setNewCatLabel("");
+    setMsg({ ok: true, text: `added category "${label}" ✦` });
+  };
+
+  const deleteCategory = async (cat) => {
+    const catPhotos = photos.filter((p) => p.category_id === cat.id);
+    if (catPhotos.length > 0) {
+      const confirmed = window.confirm(
+        `"${cat.label}" has ${catPhotos.length} photo(s).\n\ndelete the category AND all its photos + files?`,
+      );
+      if (!confirmed) return;
+      // children first — restrict blocks the category delete otherwise
+      const { error: photoErr } = await supabase
+        .from("artelier_photos")
+        .delete()
+        .eq("category_id", cat.id);
+      if (photoErr) return showError(photoErr);
+      await supabase.storage
+        .from("artelier")
+        .remove(catPhotos.map((p) => p.path));
+    } else {
+      const confirmed = window.confirm(`delete category "${cat.label}"?`);
+      if (!confirmed) return;
+    }
+    const { error } = await supabase
+      .from("artelier_categories")
+      .delete()
+      .eq("id", cat.id);
+    if (error) return showError(error);
+    setPhotos((prev) => prev.filter((p) => p.category_id !== cat.id));
+    setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+    setMsg({ ok: true, text: `deleted category "${cat.label}"` });
+  };
+
+  const uploadPhotos = async (cat, files) => {
+    setUploadingId(cat.id);
+    try {
+      const siblings = photos.filter((p) => p.category_id === cat.id);
+      let nextOrder =
+        siblings.length > 0
+          ? Math.max(...siblings.map((p) => p.sort_order)) + 1
+          : 0;
+      const inserted = [];
+      for (const file of files) {
+        // random-ish path only — no filename stored or displayed anywhere
+        const ext = file.name.split(".").pop();
+        const path = `${cat.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("artelier")
+          .upload(path, file);
+        if (upErr) throw upErr;
+        const { data: urlData } = supabase.storage
+          .from("artelier")
+          .getPublicUrl(path);
+        const { data, error } = await supabase
+          .from("artelier_photos")
+          .insert({
+            category_id: cat.id,
+            src: urlData.publicUrl,
+            path,
+            sort_order: nextOrder++,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        inserted.push(data);
+      }
+      setPhotos((prev) => [...prev, ...inserted]);
+      setMsg({ ok: true, text: `uploaded ${inserted.length} photo(s) ✦` });
+    } catch (error) {
+      showError(error);
+    }
+    setUploadingId(null);
+  };
+
+  const deletePhoto = async (photo) => {
+    const { error } = await supabase
+      .from("artelier_photos")
+      .delete()
+      .eq("id", photo.id);
+    if (error) return showError(error);
+    await supabase.storage.from("artelier").remove([photo.path]);
+    setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    setMsg({ ok: true, text: "photo removed" });
+  };
+
+  if (!categories || !photos)
+    return <p className="experience-empty">loading gallery…</p>;
+
+  return (
+    <>
+      <div className="skills-panel">
+        {categories.map((cat) => {
+          const isOpen = openCategory === cat.id;
+          const catPhotos = photos.filter((p) => p.category_id === cat.id);
+          return (
+            <div
+              key={cat.id}
+              className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="skills-toggle"
+                  style={{ width: "auto", flex: 1 }}
+                  onClick={() =>
+                    setOpenCategory((prev) => (prev === cat.id ? null : cat.id))
+                  }
+                >
+                  <span className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}>
+                    ▸
+                  </span>
+                  {cat.label}
+                  <span
+                    className="skill-text-list skill-text-list--muted"
+                    style={{ fontSize: "9px", marginLeft: "4px" }}
+                  >
+                    ({catPhotos.length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="back-btn"
+                  onClick={() => deleteCategory(cat)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="nested-skills">
+                  {catPhotos.length > 0 && (
+                    <div className="screenshot-grid">
+                      {catPhotos.map((photo) => (
+                        <div key={photo.id} style={{ position: "relative" }}>
+                          <div className="screenshot-thumb">
+                            <img src={photo.src} alt="artelier artwork" />
+                          </div>
+                          <button
+                            type="button"
+                            className="back-btn"
+                            style={{
+                              position: "absolute",
+                              top: "2px",
+                              right: "2px",
+                              background: "rgba(0,0,0,0.6)",
+                            }}
+                            onClick={() => deletePhoto(photo)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* hidden input + button — walang filename na lalabas ✦ */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={(ev) => {
+                      const files = Array.from(ev.target.files);
+                      if (files.length > 0) uploadPhotos(cat, files);
+                      ev.target.value = "";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-gold"
+                    style={{ marginTop: "8px" }}
+                    disabled={uploadingId === cat.id}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploadingId === cat.id ? "uploading…" : "+ upload photos"}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <input
+            value={newCatLabel}
+            onChange={(e) => setNewCatLabel(e.target.value)}
+            placeholder="new category… (e.g. chibi, portraits)"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button type="button" className="btn-gold" onClick={addCategory}>
+            + add
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{ color: msg.ok ? "var(--gold)" : "#ff5f57", marginTop: "10px" }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
+// ── Admin: artelier terms of services (categories + jsonb bullets) ───────────
+function AdminArtelierTos() {
+  const [cats, setCats] = useState(null);
+  const [openId, setOpenId] = useState(null);
+  const [editBullets, setEditBullets] = useState([""]);
+  const [newLabel, setNewLabel] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("artelier_tos")
+        .select("*")
+        .order("sort_order");
+      if (!error) setCats(data);
+    }
+    load();
+  }, []);
+
+  const showError = (error) =>
+    setMsg({ ok: false, text: `failed: ${error.message}` });
+
+  const toggleCat = (cat) => {
+    if (openId === cat.id) {
+      setOpenId(null);
+      return;
+    }
+    setOpenId(cat.id);
+    setEditBullets(cat.bullets.length > 0 ? cat.bullets : [""]);
+  };
+
+  const addCategory = async () => {
+    const label = newLabel.trim();
+    if (!label) return;
+    const nextOrder =
+      cats.length > 0 ? Math.max(...cats.map((c) => c.sort_order)) + 1 : 0;
+    const { data, error } = await supabase
+      .from("artelier_tos")
+      .insert({ label, bullets: [], sort_order: nextOrder })
+      .select()
+      .single();
+    if (error) return showError(error);
+    setCats((prev) => [...prev, data]);
+    setNewLabel("");
+    setMsg({ ok: true, text: `added "${label}" ✦` });
+  };
+
+  const deleteCategory = async (cat) => {
+    const confirmed = window.confirm(
+      `delete TOS category "${cat.label}" and its bullets?`,
+    );
+    if (!confirmed) return;
+    const { error } = await supabase
+      .from("artelier_tos")
+      .delete()
+      .eq("id", cat.id);
+    if (error) return showError(error);
+    setCats((prev) => prev.filter((c) => c.id !== cat.id));
+    if (openId === cat.id) setOpenId(null);
+    setMsg({ ok: true, text: `deleted "${cat.label}"` });
+  };
+
+  const saveBullets = async (cat) => {
+    setSaving(true);
+    const clean = editBullets.map((b) => b.trim()).filter(Boolean);
+    const { error } = await supabase
+      .from("artelier_tos")
+      .update({ bullets: clean })
+      .eq("id", cat.id);
+    setSaving(false);
+    if (error) return showError(error);
+    setCats((prev) =>
+      prev.map((c) => (c.id === cat.id ? { ...c, bullets: clean } : c)),
+    );
+    setMsg({ ok: true, text: `saved "${cat.label}" bullets ✦` });
+  };
+
+  if (!cats) return <p className="experience-empty">loading terms…</p>;
+
+  return (
+    <>
+      <div className="skills-panel">
+        {cats.map((cat) => {
+          const isOpen = openId === cat.id;
+          return (
+            <div
+              key={cat.id}
+              className={`skills-row-card ${isOpen ? "skills-row-card--open" : ""}`}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="skills-toggle"
+                  style={{ width: "auto", flex: 1 }}
+                  onClick={() => toggleCat(cat)}
+                >
+                  <span className={`skills-toggle-arrow ${isOpen ? "open" : ""}`}>
+                    ▸
+                  </span>
+                  {cat.label}
+                  <span
+                    className="skill-text-list skill-text-list--muted"
+                    style={{ fontSize: "9px", marginLeft: "4px" }}
+                  >
+                    ({cat.bullets.length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="back-btn"
+                  onClick={() => deleteCategory(cat)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="nested-skills">
+                  <div className="screenshot-gallery-label">bullet points</div>
+                  <BulletInputs
+                    bullets={editBullets}
+                    setBullets={setEditBullets}
+                  />
+                  <button
+                    type="button"
+                    className="btn-gold"
+                    style={{ marginTop: "8px" }}
+                    disabled={saving}
+                    onClick={() => saveBullets(cat)}
+                  >
+                    {saving ? "saving…" : "✦ save bullets ✦"}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <input
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            placeholder="new TOS category… (e.g. payment, revisions)"
+            className="browser-url"
+            style={adminInputStyle}
+          />
+          <button type="button" className="btn-gold" onClick={addCategory}>
+            + add
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <p
+          className="experience-teaser"
+          style={{ color: msg.ok ? "var(--gold)" : "#ff5f57", marginTop: "10px" }}
+        >
+          {msg.text}
+        </p>
+      )}
+    </>
+  );
+}
+
 const ADMIN_TABS = [
   "profile",
   "skills",
@@ -3685,6 +4762,7 @@ const ADMIN_TABS = [
   "get in touch",
 ];
 const ADMIN_TAB_URLS = {
+  artelier: "@kangkang/admin/artelier",
   profile: "@kangkang/admin/profile",
   skills: "@kangkang/admin/skills",
   experience: "@kangkang/admin/experience",
@@ -3761,25 +4839,93 @@ function AdminPage() {
 
   const handleLogout = () => supabase.auth.signOut();
 
+  const coverInputRef = useRef(null);
+  const avatarInputRef = useRef(null);
+
+  // uploads one image sa profile-images bucket, returns public URL
+  const uploadProfileImage = async (file, kind) => {
+    const path = `${kind}/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage
+      .from("profile-images")
+      .upload(path, file);
+    if (upErr) throw upErr;
+    const { data } = supabase.storage.from("profile-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleImageChange = async (e, kind) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // para pwede ulit i-select yung same file
+    if (!file) return;
+    setSaveMsg(null);
+    const field = kind === "avatar" ? "avatar_url" : "cover_url";
+    const oldUrl = profileForm[field];
+    try {
+      const url = await uploadProfileImage(file, kind);
+      const { error } = await supabase
+        .from("profile")
+        .update({ [field]: url })
+        .eq("id", profileForm.id);
+      if (error) throw error;
+      setProfileForm((p) => ({ ...p, [field]: url }));
+      // cleanup: burahin yung old file para hindi mag-ipon ng basura
+      if (oldUrl && oldUrl.includes("/profile-images/")) {
+        const oldPath = oldUrl.split("/profile-images/")[1];
+        await supabase.storage.from("profile-images").remove([oldPath]);
+      }
+      setSaveMsg({
+        ok: true,
+        text: `${kind} updated ✦ refresh the main page to see it`,
+      });
+    } catch (err) {
+      setSaveMsg({ ok: false, text: `upload failed: ${err.message}` });
+    }
+  };
+
   return (
     <div className="profile-bg">
-      <div
-        className="profile-card"
-        style={{ maxWidth: session ? "560px" : "400px" }}
-      >
-        <div className="browser-bar">
-          <div className="browser-dots">
-            <span className="dot-red" />
-            <span className="dot-yellow" />
-            <span className="dot-green" />
-          </div>
-          <div className="browser-url">
-            {session ? ADMIN_TAB_URLS[activeTab] : "@kangkang/admin"}
-          </div>
-        </div>
-        <div className="profile-card-body" style={{ padding: "24px 28px" }}>
-          {session ? (
-            <>
+      {session ? (
+        <div
+          className={`admin-layout ${
+            activeTab === "services" ? "admin-layout--wide" : ""
+          }`}
+        >
+          {/* side nav — hiwalay sa browser-frame */}
+          <nav className="admin-sidebar">
+            {ADMIN_TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={activeTab === tab ? "active" : ""}
+              >
+                {tab}
+              </button>
+            ))}
+            <button
+              className={
+                "admin-sidebar-artelier" +
+                (activeTab === "artelier" ? " active" : "")
+              }
+              onClick={() => setActiveTab("artelier")}
+            >
+              ✦ artelier
+            </button>
+          </nav>
+
+          {/* reused browser-frame, same as public pages */}
+          <div className="browser-frame admin-frame">
+            <div className="browser-bar">
+              <div className="browser-dots">
+                <span className="dot-red" />
+                <span className="dot-yellow" />
+                <span className="dot-green" />
+              </div>
+              <div className="browser-url">{ADMIN_TAB_URLS[activeTab]}</div>
+              <button className="back-btn" onClick={handleLogout}>
+                log out
+              </button>
+            </div>
+            <div className="section-content">
               <div className="profile-about-label">
                 <span>ADMIN — {activeTab.toUpperCase()}</span>
               </div>
@@ -3792,12 +4938,24 @@ function AdminPage() {
                 <AdminSkills />
               ) : activeTab === "home" ? (
                 <AdminHome />
+              ) : activeTab === "artelier" ? (
+                <AdminArtelier />
               ) : activeTab === "about me" ? (
                 <AdminAbout />
               ) : activeTab === "services" ? (
                 <>
-                  <AdminArtworks />
-                  <AdminWebProjects />
+                  <AdminTabCover
+                    table="services_content"
+                    kind="services-cover"
+                  />
+                  <div className="admin-services-grid">
+                    <div>
+                      <AdminWebProjects />
+                    </div>
+                    <div>
+                      <AdminArtworks />
+                    </div>
+                  </div>
                 </>
               ) : activeTab === "get in touch" ? (
                 <AdminContact />
@@ -3805,6 +4963,44 @@ function AdminPage() {
                 <p className="experience-empty">loading profile…</p>
               ) : (
                 <form onSubmit={handleSaveProfile}>
+                  <div
+                    className="profile-cover admin-cover-preview"
+                    style={{
+                      backgroundImage: `url(${profileForm.cover_url || "/frame1.png"})`,
+                    }}
+                    onClick={() => coverInputRef.current?.click()}
+                  />
+                  <div className="profile-avatar-wrap">
+                    <div
+                      className="profile-avatar admin-avatar-preview"
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      <img
+                        src={profileForm.avatar_url || "/kangkang.png"}
+                        alt="avatar preview"
+                      />
+                    </div>
+                  </div>
+                  <p className="admin-upload-hint">
+                    click the cover or avatar to change it ✦
+                    <br />
+                    cover: recommended 1400 × 350px (wide landscape) · avatar:
+                    400 × 400px (square)
+                  </p>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleImageChange(e, "cover")}
+                  />
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleImageChange(e, "avatar")}
+                  />
                   {[
                     ["name", "name"],
                     ["title", "title"],
@@ -3877,15 +5073,20 @@ function AdminPage() {
                   </button>
                 </form>
               )}
-              <button
-                className="profile-portfolio-btn"
-                onClick={handleLogout}
-                style={{ marginTop: "20px" }}
-              >
-                log out
-              </button>
-            </>
-          ) : (
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="profile-card" style={{ maxWidth: "400px" }}>
+          <div className="browser-bar">
+            <div className="browser-dots">
+              <span className="dot-red" />
+              <span className="dot-yellow" />
+              <span className="dot-green" />
+            </div>
+            <div className="browser-url">@kangkang/admin</div>
+          </div>
+          <div className="profile-card-body" style={{ padding: "24px 28px" }}>
             <form onSubmit={handleLogin}>
               <div className="profile-about-label">
                 <span>ADMIN LOGIN</span>
@@ -3939,22 +5140,9 @@ function AdminPage() {
                 {loading ? "logging in…" : "✦ log in ✦"}
               </button>
             </form>
-          )}
+          </div>
         </div>
-        {session && (
-          <nav className="nav-tabs">
-            {ADMIN_TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={activeTab === tab ? "active" : ""}
-              >
-                {tab}
-              </button>
-            ))}
-          </nav>
-        )}
-      </div>
+      )}
     </div>
   );
 }
@@ -4406,6 +5594,34 @@ function WebDeveloperPage() {
 }
 
 
+// ── Artelier page (hidden route, /artelier) ───────────────────────────────────
+// No links point here — reachable only by typing the URL, same idea as /admin.
+// Will eventually hold the full digital-artist portfolio + TOS + pricing.
+function ArtelierPage() {
+  return (
+    <div className="page single">
+      <div className="browser-frame">
+        <div className="browser-bar">
+          <div className="browser-dots">
+            <span className="dot-red" />
+            <span className="dot-yellow" />
+            <span className="dot-green" />
+          </div>
+          <div className="browser-url">@kangkang/artelier</div>
+        </div>
+        <div className="section-content">
+          <h2 className="section-title">
+            <span className="star-prefix">★—</span> kangkang's artelier
+          </h2>
+          <p className="experience-empty">
+            🚧 artelier under construction (˶ᵔ ᵕ ᵔ˶) — tos & pricing coming soon
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Root ──────────────────────────────────────────────────────────────────────
 // Portfolio is now the main route ("/"), profile card gets its own route
 // ("/profile-card") — same pattern as /admin. Each wrapper just supplies the
@@ -4431,6 +5647,7 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/digital-artist" element={<DigitalArtistPage />} />
         <Route path="/web-developer" element={<WebDeveloperPage />} />
+        <Route path="/artelier" element={<ArtelierPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -43,7 +43,7 @@ body {
 
 /* ─── PAGE WRAPPER ─────────────────────────────── */
 .page {
-  max-width: 600px;
+  max-width: 660px;
   margin: 0 auto;
   padding: 40px 20px 80px;
   display: flex;
@@ -106,6 +106,13 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* form fields reuse .browser-url — pero textarea must wrap, hindi URL bar behavior */
+textarea.browser-url {
+  white-space: pre-wrap;
+  overflow: auto;
+  text-overflow: clip;
 }
 
 
@@ -224,6 +231,141 @@ body {
   color: var(--gold);
   background: #1e1e20;
   font-weight: 600;
+}
+
+/* ─── ADMIN LAYOUT ─────────────────────────────── */
+.admin-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  max-width: 880px;
+}
+
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  background: var(--frame-bg);
+  border: 1px solid var(--frame-border);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(201, 168, 76, 0.07); /* gold is a glow, not an outline ✦ */
+  position: sticky;
+  top: 40px;
+}
+
+.admin-sidebar button {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  transition: color 0.2s, background 0.2s;
+}
+
+.admin-sidebar button:hover {
+  color: var(--text);
+  background: #222224;
+}
+
+.admin-sidebar button.active {
+  color: var(--gold);
+  background: #1e1e20;
+  font-weight: 600;
+}
+
+/* artelier link — hiwalay sa tabs via divider, gold text (glow, not outline ✦) */
+.admin-sidebar .admin-sidebar-artelier {
+  margin-top: 14px;
+  border-top: 1px solid var(--frame-border);
+  border-radius: 0 0 6px 6px;
+  color: var(--gold);
+}
+
+.admin-sidebar .admin-sidebar-artelier:hover {
+  color: var(--gold);
+}
+
+.admin-frame {
+  flex: 1;
+  min-width: 0; /* para hindi lumagpas ang frame sa flex row */
+}
+
+@media (max-width: 700px) {
+  .admin-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .admin-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+    min-width: 0;
+  }
+  .admin-sidebar .admin-sidebar-artelier {
+    margin-top: 0;
+    border-top: none;
+    border-radius: 6px;
+  }
+}
+
+/* ─── ADMIN EXPERIENCE TWO-COL ─────────────────── */
+.admin-exp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* ─── ADMIN SERVICES THREE-COL ─────────────────── */
+.admin-layout--wide {
+  max-width: 1280px;
+}
+
+.admin-services-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* desktop: saved left, form middle */
+.admin-col-saved {
+  order: 1;
+}
+.admin-col-form {
+  order: 2;
+}
+
+@media (max-width: 1100px) {
+  .admin-services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  /* single column na — form muna bago saved */
+  .admin-col-form {
+    order: 1;
+  }
+  .admin-col-saved {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-exp-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ─── SECTION HEADING ──────────────────────────── */
@@ -814,6 +956,49 @@ body {
 
 .profile-cover-text .section-title {
   font-size: 1.15rem;
+}
+
+/* portfolio sections: same cover treatment as profile card,
+   full-bleed derived vs section-content's 28px padding */
+.section-content > .profile-cover {
+  width: calc(100% + 56px);
+  margin: -28px -28px 16px;
+}
+
+/* home only: cover grows to fit the overlapped intro quote */
+.profile-cover--with-desc {
+  height: auto;
+  min-height: 200px;
+}
+
+.cover-desc {
+  margin-top: 10px;
+  max-width: 300px;
+}
+
+/* home only: tighten cover-to-button gap */
+.section-content > .profile-cover--with-desc {
+  margin-bottom: 12px;
+}
+
+.hero-resume-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  padding: 9px 18px;
+  background: var(--gold);
+  color: var(--frame-bg);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.hero-resume-btn:hover {
+  opacity: 0.85;
 }
 
 .profile-about-label {
@@ -1836,4 +2021,43 @@ body {
     top: 12px;
     right: 12px;
   }
+}
+
+/* ─── ADMIN PROFILE IMAGE UPLOADERS ─────────────── */
+.profile-cover.admin-cover-preview {
+  width: 100%;
+  margin: 0 0 0;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--frame-border);
+  transition: border-color 0.2s;
+}
+
+.profile-cover.admin-cover-preview:hover {
+  border-color: var(--gold);
+}
+
+.profile-avatar.admin-avatar-preview {
+  cursor: pointer;
+  transition: outline-color 0.2s;
+}
+
+.profile-avatar.admin-avatar-preview:hover {
+  outline-color: var(--gold-light);
+}
+
+.admin-upload-hint {
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+/* services admin (wide layout): cover preview stays same width as normal tabs */
+.admin-layout--wide .admin-tab-cover {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
