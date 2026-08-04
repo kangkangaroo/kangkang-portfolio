@@ -5196,8 +5196,7 @@ function DigitalArtistPage() {
           <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
             <div className="lightbox-card-bar modal-bar-titled">
               <span className="modal-bar-title">
-                <span className="star-prefix">★</span>{" "}
-                {lightbox.items[lightbox.index].label || "artwork preview"}
+                <span className="star-prefix">★</span> artwork preview
               </span>
               <button
                 className="lightbox-close"
@@ -5300,9 +5299,6 @@ function DigitalArtistPage() {
                         loading="lazy"
                         draggable={false}
                       />
-                      {art.label && (
-                        <div className="artwork-label">{art.label}</div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -5602,6 +5598,18 @@ function ArtelierPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loadError, setLoadError] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
+
+  const goPrev = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: (p.index - 1 + p.items.length) % p.items.length,
+    }));
+  const goNext = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: (p.index + 1) % p.items.length,
+    }));
 
   useEffect(() => {
     async function load() {
@@ -5621,7 +5629,55 @@ function ArtelierPage() {
   }, []);
 
   return (
-    <div className="page single">
+    <div className="page single" onContextMenu={(e) => e.preventDefault()}>
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> artwork preview
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setLightbox(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="lightbox-img-wrap">
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                  onClick={goPrev}
+                >
+                  ‹
+                </button>
+              )}
+              <div className="lightbox-frame">
+                <img
+                  src={lightbox.items[lightbox.index].src}
+                  alt="artelier artwork"
+                  className="lightbox-img"
+                  draggable={false}
+                />
+              </div>
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                  onClick={goNext}
+                >
+                  ›
+                </button>
+              )}
+              {lightbox.items.length > 1 && (
+                <div className="lightbox-counter">
+                  {lightbox.index + 1} / {lightbox.items.length}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="browser-frame">
         <div className="browser-bar">
           <div className="browser-dots">
@@ -5634,9 +5690,7 @@ function ArtelierPage() {
 
         {loadError ? (
           <div className="section-content">
-            <p className="experience-empty">
-              couldn't load artelier (´•̥ ω •̥`)
-            </p>
+            <p className="experience-empty">couldn't load artelier (´•̥ ω •̥`)</p>
           </div>
         ) : !profile ? (
           <div className="section-content">
@@ -5702,28 +5756,98 @@ function ArtelierPage() {
 function ArtelierGalleryPage() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState(null);
+  const [photos, setPhotos] = useState(null);
   const [activeCat, setActiveCat] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from("artelier_categories")
-        .select("*")
-        .order("sort_order");
-      if (error) {
-        console.error("artelier categories load failed:", error);
+      const [catRes, photoRes] = await Promise.all([
+        supabase.from("artelier_categories").select("*").order("sort_order"),
+        supabase.from("artelier_photos").select("*").order("sort_order"),
+      ]);
+      if (catRes.error || photoRes.error) {
+        console.error(
+          "artelier gallery load failed:",
+          catRes.error || photoRes.error,
+        );
         setLoadError(true);
-      } else {
-        setCategories(data);
-        if (data.length > 0) setActiveCat(data[0].id);
+        return;
       }
+      setCategories(catRes.data);
+      setPhotos(photoRes.data);
+      if (catRes.data.length > 0) setActiveCat(catRes.data[0].id);
     }
     load();
   }, []);
 
+  const shown = photos
+    ? photos.filter((p) => p.category_id === activeCat)
+    : [];
+
+  const goPrev = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === 0 ? p.items.length - 1 : p.index - 1,
+    }));
+  const goNext = () =>
+    setLightbox((p) => ({
+      ...p,
+      index: p.index === p.items.length - 1 ? 0 : p.index + 1,
+    }));
+
   return (
-    <div className="page single">
+    <div className="page single" onContextMenu={(e) => e.preventDefault()}>
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-card-bar modal-bar-titled">
+              <span className="modal-bar-title">
+                <span className="star-prefix">★</span> artwork preview
+              </span>
+              <button
+                className="lightbox-close"
+                onClick={() => setLightbox(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="lightbox-img-wrap">
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--prev"
+                  onClick={goPrev}
+                >
+                  ‹
+                </button>
+              )}
+              <div className="lightbox-frame">
+                <img
+                  src={lightbox.items[lightbox.index].src}
+                  alt="artelier artwork"
+                  className="lightbox-img"
+                  draggable={false}
+                />
+              </div>
+              {lightbox.items.length > 1 && (
+                <button
+                  className="lightbox-nav-arrow lightbox-nav-arrow--next"
+                  onClick={goNext}
+                >
+                  ›
+                </button>
+              )}
+              {lightbox.items.length > 1 && (
+                <div className="lightbox-counter">
+                  {lightbox.index + 1} / {lightbox.items.length}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="browser-frame">
         <div className="browser-bar">
           <div className="browser-dots">
@@ -5745,7 +5869,7 @@ function ArtelierGalleryPage() {
             <p className="experience-empty">
               couldn't load gallery (´•̥ ω •̥`)
             </p>
-          ) : !categories ? (
+          ) : !categories || !photos ? (
             <p className="experience-empty">loading…</p>
           ) : categories.length === 0 ? (
             <p className="experience-empty">
@@ -5765,7 +5889,29 @@ function ArtelierGalleryPage() {
                   </button>
                 ))}
               </div>
-              {/* 🚧 next stage: photo grid ng active category dito */}
+              {shown.length === 0 ? (
+                <p className="experience-empty">
+                  no photos in this category yet
+                </p>
+              ) : (
+                <div className="artwork-scroll">
+                  {shown.map((photo, i) => (
+                    <div
+                      key={photo.id}
+                      className="artwork-item"
+                      onClick={() => setLightbox({ items: shown, index: i })}
+                    >
+                      <img
+                        src={photo.src}
+                        alt="artelier artwork"
+                        className="artwork-img"
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>

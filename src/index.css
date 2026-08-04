@@ -1750,20 +1750,13 @@ textarea.browser-url {
 }
 
 .artwork-scroll {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 10px;
+  column-count: 3;
+  column-gap: 10px;
   margin-bottom: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold) var(--frame-border);
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
 }
 
 .artwork-scroll::-webkit-scrollbar {
-  height: 4px;
+  width: 4px;
 }
 
 .artwork-scroll::-webkit-scrollbar-track {
@@ -1778,9 +1771,10 @@ textarea.browser-url {
 }
 
 .artwork-item {
-  flex: 0 0 160px;
-  width: 160px;
-  scroll-snap-align: start;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 10px;
+  break-inside: avoid;
   position: relative;
   border-radius: 6px;
   overflow: hidden;
@@ -1789,15 +1783,21 @@ textarea.browser-url {
   cursor: pointer;
 }
 
+@media (max-width: 720px) {
+  .artwork-scroll {
+    column-count: 2;
+  }
+}
+
 .artwork-item:hover {
   border-color: var(--gold);
 }
 
 .artwork-img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
   display: block;
+  margin: 0 auto;
 }
 
 .artwork-label {
@@ -2072,16 +2072,12 @@ textarea.browser-url {
   padding-bottom: 56px;
 }
 
-/* big version ng profile-avatar — same recipe, scaled up.
-   gold is a glow, not an outline… pero avatar ring is the one
-   exception na established na natin sa profile card, so keep. */
 .artelier-avatar {
   width: 180px;
   height: 180px;
   border-radius: 50%;
   border: 4px solid var(--frame-bg);
   outline: 2px solid var(--gold);
-  box-shadow: 0 0 24px rgba(201, 168, 76, 0.35);
   background: linear-gradient(135deg, #2a2a2e, #1e1e22);
   display: flex;
   align-items: center;
@@ -2146,10 +2142,16 @@ textarea.browser-url {
 
 /* ── Artelier gallery: category buttons, exactly 5 per row then wrap ── */
 .artelier-cat-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 20px;
+}
+
+/* basis = one-fifth of the row (minus gaps), so max 5 per row;
+   flex-grow: 1 stretches them to fill kapag less than 5 */
+.artelier-cat-grid .service-tab {
+  flex: 1 1 calc((100% - 32px) / 5);
 }
 
 /* service-tab is inline-flex sized by content — inside the grid,
@@ -2161,8 +2163,8 @@ textarea.browser-url {
 }
 
 @media (max-width: 700px) {
-  /* 5 columns on a phone = sardinas; drop to 3 per row */
-  .artelier-cat-grid {
-    grid-template-columns: repeat(3, 1fr);
+  /* 3 per row max on phone */
+  .artelier-cat-grid .service-tab {
+    flex-basis: calc((100% - 16px) / 3);
   }
 }
